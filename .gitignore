@@ -1,18 +1,44 @@
-# Secrets — never commit these
+# Secrets and local env
 .env
+.env.*
+!.env.example
 
-# Maven build output
+# Maven/Java build output
 target/
+out/
+build/
 
-# IDE
+# Java artifacts
+*.class
+*.jar
+*.war
+*.ear
+
+# Test and coverage artifacts
+coverage/
+jacoco.exec
+surefire-reports/
+failsafe-reports/
+
+# Runtime files
+*.log
+logs/
+*.pid
+*.pid.lock
+
+# IDE/editor
 .idea/
 *.iml
+.project
+.classpath
+.settings/
 .vscode/
 
-# OS
+# OS files
 .DS_Store
 Thumbs.db
 
-# Logs
-*.log
-logs/
+# Misc temp files
+*.swp
+*.swo
+*.tmp
