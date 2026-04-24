@@ -12,4 +12,6 @@ public interface TenantService {
     List<TenantResponse> getAllTenants();
 
     TenantResponse getTenantByTenantId(String tenantId);
+
+    TenantResponse getCurrentTenant();
 }

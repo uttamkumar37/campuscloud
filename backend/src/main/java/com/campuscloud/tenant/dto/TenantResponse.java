@@ -8,6 +8,8 @@ public record TenantResponse(
         String tenantId,
         String schoolName,
         String schemaName,
+        String logoUrl,
+        String primaryColor,
         boolean active,
         Instant createdAt
 ) {

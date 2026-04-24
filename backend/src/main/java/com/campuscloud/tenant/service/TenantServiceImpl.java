@@ -40,6 +40,8 @@ public class TenantServiceImpl implements TenantService {
         tenant.setTenantId(tenantId);
         tenant.setSchoolName(request.schoolName().trim());
         tenant.setSchemaName(schemaName);
+        tenant.setLogoUrl(normalizeNullable(request.logoUrl()));
+        tenant.setPrimaryColor(request.primaryColor().trim());
         tenant.setActive(true);
 
         Tenant saved = tenantRepository.save(tenant);
@@ -58,6 +60,17 @@ public class TenantServiceImpl implements TenantService {
     public TenantResponse getTenantByTenantId(String tenantId) {
         Tenant tenant = tenantRepository.findByTenantId(normalize(tenantId))
                 .orElseThrow(() -> new IllegalArgumentException("Tenant not found: " + tenantId));
+        return map(tenant);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public TenantResponse getCurrentTenant() {
+        String schemaName = TenantContext.getTenant();
+        validateTenantContext(schemaName);
+
+        Tenant tenant = tenantRepository.findBySchemaName(schemaName)
+                .orElseThrow(() -> new IllegalArgumentException("Tenant not found for schema: " + schemaName));
         return map(tenant);
     }
 
@@ -271,12 +284,27 @@ public class TenantServiceImpl implements TenantService {
         return value.trim().toLowerCase(Locale.ROOT);
     }
 
+    private String normalizeNullable(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
+    }
+
+    private void validateTenantContext(String schemaName) {
+        if (schemaName == null || TenantContext.DEFAULT_SCHEMA.equals(schemaName)) {
+            throw new IllegalArgumentException("X-Tenant-ID header is required for tenant operations");
+        }
+    }
+
     private TenantResponse map(Tenant tenant) {
         return new TenantResponse(
                 tenant.getId(),
                 tenant.getTenantId(),
                 tenant.getSchoolName(),
                 tenant.getSchemaName(),
+                tenant.getLogoUrl(),
+                tenant.getPrimaryColor(),
                 tenant.isActive(),
                 tenant.getCreatedAt()
         );

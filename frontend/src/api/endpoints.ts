@@ -4,6 +4,13 @@ export const ENDPOINTS = {
   auth: {
     login: '/auth/login',
   },
+  dashboard: {
+    tenantSummary: '/dashboard/tenant-summary',
+    superAdminSummary: '/dashboard/super-admin-summary',
+  },
+  tenants: {
+    base: '/tenants',
+  },
   students: {
     base: '/students',
   },
@@ -11,6 +18,6 @@ export const ENDPOINTS = {
     base: '/teachers',
   },
   academic: {
-    base: '/academic',
+    base: '/academics',
   },
 } as const

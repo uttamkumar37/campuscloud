@@ -3,7 +3,11 @@ import { useState } from 'react'
 
 import { DataTable, type DataTableColumn } from '../../../components/ui/DataTable'
 import { PageHeader } from '../../../components/ui/PageHeader'
+import { Button } from '../../../components/ui/Button'
+import { EmptyState } from '../../../components/ui/EmptyState'
+import { Skeleton } from '../../../components/ui/Skeleton'
 import type { ApiResponse } from '../../../types/api'
+import { showToast } from '../../../utils/toast'
 
 import { StudentForm } from '../components/StudentForm'
 import { useCreateStudent } from '../hooks/useCreateStudent'
@@ -67,13 +71,28 @@ export function StudentsPage() {
       const response = await createStudentMutation.mutateAsync(payload)
       if (!response.success) {
         setSubmitError(response.message || 'Unable to create student')
+        showToast({
+          title: 'Student not created',
+          description: response.message || 'Unable to create student',
+          tone: 'error',
+        })
         return false
       }
 
+      showToast({
+        title: 'Student created',
+        description: `${response.data.firstName} ${response.data.lastName} has been enrolled.`,
+        tone: 'success',
+      })
       return true
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse<unknown>>
       setSubmitError(axiosError.response?.data?.message || 'Unable to create student')
+      showToast({
+        title: 'Student not created',
+        description: axiosError.response?.data?.message || 'Unable to create student',
+        tone: 'error',
+      })
       return false
     }
   }
@@ -104,15 +123,14 @@ export function StudentsPage() {
         </div>
 
         {studentsQuery.isLoading ? (
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-6 text-sm text-slate-600">
-            Loading students...
+          <div className="grid gap-3">
+            <Skeleton className="h-20" />
+            <Skeleton className="h-20" />
           </div>
         ) : null}
 
         {studentsQuery.isError ? (
-          <div className="rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-            Failed to fetch students.
-          </div>
+          <EmptyState title="Students unavailable" description="Failed to fetch students for this tenant." />
         ) : null}
 
         {!studentsQuery.isLoading && !studentsQuery.isError ? (
@@ -126,25 +144,23 @@ export function StudentsPage() {
 
         {pageInfo ? (
           <div className="flex items-center justify-end gap-2">
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               onClick={() => setPage((previous) => Math.max(0, previous - 1))}
               disabled={pageInfo.page === 0}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Previous
-            </button>
+            </Button>
             <span className="text-sm text-slate-600">
               Page {pageInfo.page + 1} of {Math.max(1, pageInfo.totalPages)}
             </span>
-            <button
-              type="button"
+            <Button
+              variant="secondary"
               onClick={() => setPage((previous) => previous + 1)}
               disabled={pageInfo.last}
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               Next
-            </button>
+            </Button>
           </div>
         ) : null}
       </div>

@@ -29,18 +29,21 @@ export function LoginPage() {
         return
       }
 
-      setAuthSession(response.data.accessToken, formValues.tenantId)
-      navigate('/dashboard', { replace: true })
+      setAuthSession(response.data, formValues.tenantId)
+      navigate(response.data.role === 'SUPER_ADMIN' ? '/super-admin/dashboard' : '/dashboard', {
+        replace: true,
+      })
     } catch {
       setFormError('Unable to sign in. Check credentials and tenant ID.')
     }
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-100 p-4">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-2xl font-semibold text-slate-900">Sign in to EduTenant</h1>
-        <p className="mt-2 text-sm text-slate-600">Use your tenant-bound credentials to continue.</p>
+    <div className="flex min-h-screen items-center justify-center bg-[#f4f8fb] p-4">
+      <div className="w-full max-w-md rounded-[34px] border border-slate-200 bg-white p-8 shadow-[0_30px_70px_-40px_rgba(15,23,42,0.35)]">
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-700">CampusCloud</p>
+        <h1 className="mt-4 text-3xl font-semibold text-slate-950">Tenant Login</h1>
+        <p className="mt-2 text-sm text-slate-600">Use your tenant-bound credentials to enter the school workspace.</p>
 
         <form className="mt-6 space-y-4" onSubmit={handleSubmit}>
           <label className="block">
@@ -51,8 +54,8 @@ export function LoginPage() {
               onChange={(event) =>
                 setFormValues((previous) => ({ ...previous, tenantId: event.target.value }))
               }
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-emerald-200 transition focus:ring-2"
-              placeholder="school-tenant-001"
+              className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none ring-emerald-200 transition focus:ring-2"
+              placeholder="sunrise"
               required
             />
           </label>
@@ -65,7 +68,7 @@ export function LoginPage() {
               onChange={(event) =>
                 setFormValues((previous) => ({ ...previous, username: event.target.value }))
               }
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-emerald-200 transition focus:ring-2"
+              className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none ring-emerald-200 transition focus:ring-2"
               placeholder="admin"
               required
             />
@@ -79,14 +82,14 @@ export function LoginPage() {
               onChange={(event) =>
                 setFormValues((previous) => ({ ...previous, password: event.target.value }))
               }
-              className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-emerald-200 transition focus:ring-2"
+              className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm text-slate-900 outline-none ring-emerald-200 transition focus:ring-2"
               placeholder="••••••••"
               required
             />
           </label>
 
           {formError ? (
-            <div className="rounded-md border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
               {formError}
             </div>
           ) : null}
@@ -94,9 +97,17 @@ export function LoginPage() {
           <button
             type="submit"
             disabled={loginMutation.isPending}
-            className="inline-flex w-full items-center justify-center rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
+            className="inline-flex w-full items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-400"
           >
             {loginMutation.isPending ? 'Signing in...' : 'Sign In'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => navigate('/super-admin/login')}
+            className="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+          >
+            Super Admin Login
           </button>
         </form>
       </div>

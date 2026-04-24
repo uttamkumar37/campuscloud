@@ -1,9 +1,11 @@
 package com.campuscloud.attendance.repository;
 
+import com.campuscloud.attendance.entity.AttendanceStatus;
 import com.campuscloud.attendance.entity.AttendanceRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -12,4 +14,12 @@ public interface AttendanceRecordRepository extends JpaRepository<AttendanceReco
     boolean existsByStudentIdAndAttendanceDate(UUID studentId, LocalDate attendanceDate);
 
     List<AttendanceRecord> findAllByAttendanceDate(LocalDate attendanceDate);
+
+    List<AttendanceRecord> findAllByAttendanceDateBetween(LocalDate startDate, LocalDate endDate);
+
+    List<AttendanceRecord> findTop8ByOrderByCreatedAtDesc();
+
+    long countByAttendanceDateBetweenAndStatusIn(LocalDate startDate, LocalDate endDate, Collection<AttendanceStatus> statuses);
+
+    long countByAttendanceDateBetween(LocalDate startDate, LocalDate endDate);
 }

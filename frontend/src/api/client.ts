@@ -2,6 +2,7 @@ import axios from 'axios'
 
 import { API_BASE_URL } from './endpoints'
 import { storage } from '../utils/storage'
+import { showToast } from '../utils/toast'
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
@@ -24,3 +25,19 @@ apiClient.interceptors.request.use((config) => {
 
   return config
 })
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      storage.clearAuth()
+      showToast({
+        title: 'Session expired',
+        description: 'Please sign in again to continue.',
+        tone: 'error',
+      })
+    }
+
+    return Promise.reject(error)
+  },
+)

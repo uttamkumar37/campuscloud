@@ -9,17 +9,18 @@
       "name": "Auth",
       "item": [
         {
-          "name": "Login",
+          "name": "Super Admin Login",
           "event": [
             {
               "listen": "test",
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.environment.set(\"token\", pm.response.json().data.token);",
-                  "if (!pm.environment.get(\"token\")) {",
-                  "  pm.environment.set(\"token\", pm.response.json().data.accessToken);",
-                  "}"
+                  "const response = pm.response.json();",
+                  "pm.environment.set(\"token\", response.data.accessToken);",
+                  "pm.environment.set(\"username\", response.data.username);",
+                  "pm.environment.set(\"role\", response.data.role);",
+                  "pm.environment.set(\"tenantHeader\", pm.environment.get(\"publicTenantId\"));"
                 ]
               }
             }
@@ -46,7 +47,53 @@
                 "login"
               ]
             },
-            "description": "AuthController#login"
+            "description": "Super admin login without tenant schema."
+          }
+        },
+        {
+          "name": "Tenant User Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const response = pm.response.json();",
+                  "pm.environment.set(\"token\", response.data.accessToken);",
+                  "pm.environment.set(\"username\", response.data.username);",
+                  "pm.environment.set(\"role\", response.data.role);",
+                  "pm.environment.set(\"tenantHeader\", pm.environment.get(\"tenantSchema\"));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantSchema}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"schooladmin\",\n  \"password\": \"StrongPass123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Tenant-scoped login for SCHOOL_ADMIN, TEACHER, STUDENT, or PARENT users."
           }
         }
       ]
@@ -65,7 +112,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{publicTenantId}}"
               },
               {
                 "key": "Authorization",
@@ -74,7 +121,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"tenantId\": \"school_2\",\n  \"schoolName\": \"Greenwood High\",\n  \"schemaName\": \"greenwood\"\n}"
+              "raw": "{\n  \"tenantId\": \"greenwood-high\",\n  \"schoolName\": \"Greenwood High\",\n  \"schemaName\": \"greenwood\",\n  \"logoUrl\": \"https://example.com/greenwood-logo.png\",\n  \"primaryColor\": \"#10b981\"\n}"
             },
             "url": {
               "raw": "{{baseUrl}}/tenants",
@@ -85,7 +132,7 @@
                 "tenants"
               ]
             },
-            "description": "TenantController#createTenant"
+            "description": "Create a new tenant in the public schema registry."
           }
         },
         {
@@ -99,7 +146,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{publicTenantId}}"
               },
               {
                 "key": "Authorization",
@@ -115,11 +162,11 @@
                 "tenants"
               ]
             },
-            "description": "TenantController#getTenants"
+            "description": "List all tenants. SUPER_ADMIN only."
           }
         },
         {
-          "name": "Get Tenant By Id",
+          "name": "Get Tenant By Tenant ID",
           "request": {
             "method": "GET",
             "header": [
@@ -129,7 +176,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{publicTenantId}}"
               },
               {
                 "key": "Authorization",
@@ -137,13 +184,13 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/tenants/{{tenantId}}",
+              "raw": "{{baseUrl}}/tenants/{{targetTenantId}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "tenants",
-                "{{tenantId}}"
+                "{{targetTenantId}}"
               ]
             },
             "description": "TenantController#getTenant"
@@ -165,7 +212,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -199,7 +246,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -248,7 +295,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -282,7 +329,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -313,7 +360,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -362,7 +409,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -396,7 +443,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -427,7 +474,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -476,7 +523,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -511,7 +558,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -542,7 +589,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -577,7 +624,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -608,7 +655,7 @@
               },
               {
                 "key": "X-Tenant-ID",
-                "value": "{{tenantId}}"
+                "value": "{{tenantSchema}}"
               },
               {
                 "key": "Authorization",
@@ -661,6 +708,100 @@
               ]
             },
             "description": "AcademicController#getSections"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Tenant Dashboard Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantSchema}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/tenant-summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "tenant-summary"
+              ]
+            },
+            "description": "Tenant KPI, chart, quick insight, and recent activity payload."
+          }
+        },
+        {
+          "name": "Get Tenant Branding",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Tenant-ID",
+                "value": "{{tenantSchema}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/branding",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "branding"
+              ]
+            },
+            "description": "Current tenant branding resolved from schema."
+          }
+        },
+        {
+          "name": "Get Super Admin Dashboard Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/super-admin-summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "dashboard",
+                "super-admin-summary"
+              ]
+            },
+            "description": "Platform-level tenant stats for SUPER_ADMIN."
           }
         }
       ]

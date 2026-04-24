@@ -1,3 +1,5 @@
+import { Select } from './Select'
+
 interface SelectOption {
   value: string
   label: string
@@ -19,20 +21,19 @@ export function FormSelect({
   required = false,
 }: FormSelectProps) {
   return (
-    <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
-      <select
+    <label className="block space-y-2">
+      <span className="block text-sm font-medium text-slate-700">{label}</span>
+      <Select
         value={value}
         onChange={(event) => onChange(event.target.value)}
         required={required}
-        className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 outline-none ring-emerald-200 transition focus:ring-2"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
           </option>
         ))}
-      </select>
+      </Select>
     </label>
   )
 }

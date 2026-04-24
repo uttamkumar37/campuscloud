@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import type { PropsWithChildren } from 'react'
 
+import { ToastViewport } from '../components/ui/ToastViewport'
 import { AuthProvider } from '../features/auth/components/AuthProvider'
 
 const queryClient = new QueryClient({
@@ -16,7 +17,10 @@ const queryClient = new QueryClient({
 export function AppProviders({ children }: PropsWithChildren) {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>{children}</AuthProvider>
+      <AuthProvider>
+        {children}
+        <ToastViewport />
+      </AuthProvider>
     </QueryClientProvider>
   )
 }

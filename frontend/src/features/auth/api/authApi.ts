@@ -5,11 +5,20 @@ import type { ApiResponse } from '../../../types/api'
 import type { LoginRequest, LoginResponse } from '../types'
 
 export async function login(payload: LoginRequest) {
-  const { tenantId, ...body } = payload
   const { data } = await apiClient.post<ApiResponse<LoginResponse>>(
     ENDPOINTS.auth.login,
-    body,
-    { headers: { 'X-Tenant-ID': tenantId } },
+    {
+      username: payload.username,
+      password: payload.password,
+    },
+    payload.tenantId
+      ? {
+          headers: {
+            'X-Tenant-ID': payload.tenantId,
+          },
+        }
+      : undefined,
   )
+
   return data
 }

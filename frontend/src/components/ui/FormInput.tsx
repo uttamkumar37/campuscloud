@@ -1,3 +1,5 @@
+import { Input } from './Input'
+
 interface FormInputProps {
   label: string
   value: string
@@ -16,15 +18,14 @@ export function FormInput({
   required = false,
 }: FormInputProps) {
   return (
-    <label className="block">
-      <span className="mb-1 block text-sm font-medium text-slate-700">{label}</span>
-      <input
+    <label className="block space-y-2">
+      <span className="block text-sm font-medium text-slate-700">{label}</span>
+      <Input
         type={type}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
         required={required}
-        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 outline-none ring-emerald-200 transition focus:ring-2"
       />
     </label>
   )

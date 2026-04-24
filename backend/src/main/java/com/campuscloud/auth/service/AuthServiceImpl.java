@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -26,6 +27,14 @@ public class AuthServiceImpl implements AuthService {
         );
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+        String primaryRole = userDetails.getAuthorities().stream()
+                .map(authority -> authority.getAuthority().replace("ROLE_", ""))
+                .sorted(Comparator.naturalOrder())
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Authenticated user has no roles"));
+
+        validateTenantRequirements(primaryRole);
+
         String token = jwtService.generateAccessToken(userDetails);
         Set<String> roles = userDetails.getAuthorities().stream()
                 .map(a -> a.getAuthority())
@@ -36,7 +45,16 @@ public class AuthServiceImpl implements AuthService {
                 "Bearer",
                 jwtService.getAccessTokenExpirationSeconds(),
                 userDetails.getUsername(),
+                primaryRole,
                 roles
         );
+    }
+
+    private void validateTenantRequirements(String primaryRole) {
+        if (!"SUPER_ADMIN".equals(primaryRole)
+                && com.campuscloud.tenant.service.TenantContext.DEFAULT_SCHEMA.equals(
+                com.campuscloud.tenant.service.TenantContext.getTenant())) {
+            throw new IllegalArgumentException("X-Tenant-ID header is required for non-super-admin login");
+        }
     }
 }

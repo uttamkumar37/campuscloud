@@ -25,21 +25,39 @@ public class SecurityConfig {
 
     @Lazy
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+
     private final TenantRequestFilter tenantRequestFilter;
 
     @Bean
-        public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                               AuthenticationProvider authenticationProvider) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+                                                   AuthenticationProvider authenticationProvider) throws Exception {
+
         http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+            // ✅ ENABLE CORS (FIXES YOUR ERROR)
+            .cors(cors -> {})
+
+            // ❌ Disable CSRF (stateless API)
+            .csrf(csrf -> csrf.disable())
+
+            // ✅ Stateless session
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+
+            // ✅ Authorization rules
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .anyRequest().authenticated()
+            )
+
+            // ✅ Authentication provider
             .authenticationProvider(authenticationProvider)
-                .addFilterBefore(tenantRequestFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+            // ⚠️ Tenant filter (runs before JWT)
+            .addFilterBefore(tenantRequestFilter, UsernamePasswordAuthenticationFilter.class)
+
+            // ✅ JWT filter
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -47,6 +65,7 @@ public class SecurityConfig {
     @Bean
     public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
                                                          PasswordEncoder passwordEncoder) {
+
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(userDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
@@ -54,7 +73,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration)
+            throws Exception {
         return authenticationConfiguration.getAuthenticationManager();
     }
 }

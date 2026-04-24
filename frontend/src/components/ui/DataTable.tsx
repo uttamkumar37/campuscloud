@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
 
+import { Card } from './Card'
+import { EmptyState } from './EmptyState'
+
 export interface DataTableColumn<T> {
   key: string
   header: string
@@ -21,15 +24,11 @@ export function DataTable<T>({
   emptyText = 'No records found.',
 }: DataTableProps<T>) {
   if (!rows.length) {
-    return (
-      <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
-        {emptyText}
-      </div>
-    )
+    return <EmptyState title="Nothing here yet" description={emptyText} />
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+    <Card className="overflow-hidden p-0">
       <div className="overflow-x-auto">
         <table className="min-w-full divide-y divide-slate-200">
           <thead className="bg-slate-50">
@@ -57,6 +56,6 @@ export function DataTable<T>({
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   )
 }

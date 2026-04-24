@@ -1,5 +1,7 @@
 const ACCESS_TOKEN_KEY = 'edutenant.accessToken'
 const TENANT_ID_KEY = 'edutenant.tenantId'
+const USERNAME_KEY = 'edutenant.username'
+const ROLE_KEY = 'edutenant.role'
 
 export const storage = {
   getAccessToken: (): string | null => localStorage.getItem(ACCESS_TOKEN_KEY),
@@ -16,8 +18,24 @@ export const storage = {
   removeTenantId: (): void => {
     localStorage.removeItem(TENANT_ID_KEY)
   },
+  getUsername: (): string | null => localStorage.getItem(USERNAME_KEY),
+  setUsername: (username: string): void => {
+    localStorage.setItem(USERNAME_KEY, username)
+  },
+  removeUsername: (): void => {
+    localStorage.removeItem(USERNAME_KEY)
+  },
+  getRole: (): string | null => localStorage.getItem(ROLE_KEY),
+  setRole: (role: string): void => {
+    localStorage.setItem(ROLE_KEY, role)
+  },
+  removeRole: (): void => {
+    localStorage.removeItem(ROLE_KEY)
+  },
   clearAuth: (): void => {
     localStorage.removeItem(ACCESS_TOKEN_KEY)
     localStorage.removeItem(TENANT_ID_KEY)
+    localStorage.removeItem(USERNAME_KEY)
+    localStorage.removeItem(ROLE_KEY)
   },
 }

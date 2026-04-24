@@ -32,6 +32,12 @@ public class Tenant {
     @Column(name = "schema_name", nullable = false, unique = true, length = 63)
     private String schemaName;
 
+    @Column(name = "logo_url", length = 500)
+    private String logoUrl;
+
+    @Column(name = "primary_color", nullable = false, length = 20)
+    private String primaryColor = "#10b981";
+
     @Column(name = "active", nullable = false)
     private boolean active = true;
 

@@ -16,6 +16,20 @@ public record TenantCreateRequest(
 
         @Size(max = 63, message = "schemaName must be at most 63 characters")
         @Pattern(regexp = "^$|^[a-z0-9_]+$", message = "schemaName must contain lowercase letters, numbers or underscore")
-        String schemaName
+        String schemaName,
+
+        @Size(max = 500, message = "logoUrl must be at most 500 characters")
+        @Pattern(
+                regexp = "^$|^(https?://).+",
+                message = "logoUrl must be a valid http or https URL"
+        )
+        String logoUrl,
+
+        @NotBlank(message = "primaryColor is required")
+        @Pattern(
+                regexp = "^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})$",
+                message = "primaryColor must be a valid hex color"
+        )
+        String primaryColor
 ) {
 }
