@@ -14,6 +14,8 @@ import { SuperAdminDashboardPage } from '../features/super-admin/pages/SuperAdmi
 import { SuperAdminLoginPage } from '../features/super-admin/pages/SuperAdminLoginPage'
 import { TenantsPage } from '../features/super-admin/pages/TenantsPage'
 import { UsersPage } from '../features/super-admin/pages/UsersPage'
+import SubscriptionPlansPage from '../features/super-admin/pages/SubscriptionPlansPage'
+import TenantSubscriptionPage from '../features/super-admin/pages/TenantSubscriptionPage'
 import { ProfilePage } from '../features/profile/pages/ProfilePage'
 import { HomeworkPage } from '../features/homework/pages/HomeworkPage'
 import { TimetablePage } from '../features/timetable/pages/TimetablePage'
@@ -43,6 +45,8 @@ export const router = createBrowserRouter([
       { path: 'dashboard', element: <SuperAdminDashboardPage /> },
       { path: 'tenants', element: <TenantsPage /> },
       { path: 'users', element: <UsersPage /> },
+      { path: 'plans', element: <SubscriptionPlansPage /> },
+      { path: 'subscriptions/:tenantId', element: <TenantSubscriptionPage /> },
     ],
   },
   {

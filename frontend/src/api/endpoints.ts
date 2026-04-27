@@ -37,4 +37,17 @@ export const ENDPOINTS = {
   parent: {
     myChildren: '/parents/me/children',
   },
+  plans: {
+    base: '/plans',
+    byId: (id: string) => `/plans/${id}`,
+  },
+  subscriptions: {
+    subscribe: (tenantId: string) => `/tenants/${tenantId}/subscribe`,
+    get: (tenantId: string) => `/tenants/${tenantId}/subscription`,
+    cancel: (tenantId: string) => `/tenants/${tenantId}/subscription`,
+  },
+  payments: {
+    base: '/payments',
+    byTenant: (tenantId: string) => `/payments/tenant/${tenantId}`,
+  },
 } as const

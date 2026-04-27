@@ -7,4 +7,7 @@ export const queryKeys = {
   tenantDashboardSummary: ['dashboard', 'tenant-summary'] as const,
   superAdminDashboardSummary: ['super-admin', 'dashboard-summary'] as const,
   tenants: ['tenants'] as const,
+  subscriptionPlans: ['subscription', 'plans'] as const,
+  tenantSubscription: (tenantId: string) => ['subscription', 'tenant', tenantId] as const,
+  tenantPayments: (tenantId: string) => ['payments', 'tenant', tenantId] as const,
 } as const
