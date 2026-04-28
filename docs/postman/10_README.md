@@ -1,5 +1,6 @@
 # CampusCloud — Postman Collection Guide
 
+
 > Last Updated: 2026-04-28
 
 This directory contains the Postman collection and environment files for testing the CampusCloud API.

@@ -1,5 +1,6 @@
 # CampusCloud — System Architecture
 
+
 > Version: 1.0 | Last Updated: 2026-04-28 (subscription system added) | Based on actual source code
 
 ---

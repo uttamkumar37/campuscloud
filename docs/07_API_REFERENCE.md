@@ -1,6 +1,7 @@
 # CampusCloud — API Reference
 
-> Quick-reference table of all REST endpoints. For full request/response details see [API.md](./API.md).
+
+> Quick-reference table of all REST endpoints. For full request/response details see [08_API.md](./08_API.md).
 
 **Base URL:** `http://localhost:8080/api/v1`
 

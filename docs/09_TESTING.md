@@ -1,5 +1,6 @@
 # CampusCloud — Testing Guide
 
+
 > Version: 1.0 | Last Updated: 2026-04-28
 
 ---
@@ -355,7 +356,7 @@ curl -s -X POST http://localhost:8080/api/v1/tenants \
 
 ## 5. Postman Testing
 
-See [postman/README.md](./postman/README.md) for full import and usage instructions.
+See [postman/10_01_10_README.md](./postman/10_01_10_README.md) for full import and usage instructions.
 
 ### Quick Start
 
@@ -478,7 +479,7 @@ void createUser_normalizesUsernameToLowercase() {
 
 ## 8. Planned: Integration Tests
 
-These are currently pending (see [PENDING_TASKS.md](./PENDING_TASKS.md) — Task 42).
+These are currently pending (see [14_PENDING_TASKS.md](./14_PENDING_TASKS.md) — Task 42).
 
 ### Planned Setup
 
@@ -507,3 +508,105 @@ These are currently pending (see [PENDING_TASKS.md](./PENDING_TASKS.md) — Task
 | Exam marks guard | `marksObtained > maxMarks` rejected |
 | JWT expiry | Expired token returns 401 |
 | Role enforcement | TEACHER cannot access `/tenants` (403) |
+
+---
+
+## 9. Role-Based Authentication Test Cases
+
+### 9.1 Login — Expected Responses
+
+| Role | Request | Expected |
+|------|---------|----------|
+| SUPER_ADMIN | `POST /auth/login` — no X-Tenant-ID | 200 + `accessToken`, `role: SUPER_ADMIN` |
+| SCHOOL_ADMIN | `POST /auth/login` + `X-Tenant-ID: greenwood` | 200 + `role: SCHOOL_ADMIN` |
+| TEACHER | `POST /auth/login` + `X-Tenant-ID: greenwood` | 200 + `role: TEACHER` |
+| STUDENT | `POST /auth/login` + `X-Tenant-ID: greenwood` | 200 + `role: STUDENT` |
+| PARENT | `POST /auth/login` + `X-Tenant-ID: greenwood` | 200 + `role: PARENT` |
+| Any | Wrong password | 401 |
+| Tenant user | Missing X-Tenant-ID | 400 |
+
+### 9.2 TEACHER — Allowed vs Forbidden
+
+```bash
+# Login as TEACHER
+TEACHER_TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: greenwood" \
+  -d '{"username":"john.teacher","password":"TeacherPass123!"}' \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['accessToken'])")
+```
+
+| Endpoint | Method | Expected Status |
+|----------|--------|-----------------|
+| `GET /api/v1/students` | GET | ✅ 200 |
+| `POST /api/v1/students` | POST | ❌ 403 |
+| `POST /api/v1/attendances` | POST | ✅ 200 |
+| `GET /api/v1/attendances?date=2026-04-28` | GET | ✅ 200 |
+| `POST /api/v1/homework` | POST | ✅ 200 |
+| `GET /api/v1/timetable/classes/{classId}/sections/{sectionId}` | GET | ✅ 200 |
+| `POST /api/v1/tenants` | POST | ❌ 403 |
+| `POST /api/v1/users` | POST | ❌ 403 |
+| `GET /api/v1/fees/students/{id}/assignments` | GET | ❌ 403 |
+
+### 9.3 STUDENT — Allowed vs Forbidden
+
+```bash
+# Login as STUDENT
+STUDENT_TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: greenwood" \
+  -d '{"username":"alice.student","password":"StudentPass123!"}' \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['accessToken'])")
+```
+
+| Endpoint | Method | Expected Status |
+|----------|--------|-----------------|
+| `GET /api/v1/auth/me` | GET | ✅ 200 (own profile) |
+| `GET /api/v1/homework/classes/{classId}` | GET | ✅ 200 |
+| `GET /api/v1/timetable/classes/{classId}/sections/{sectionId}` | GET | ✅ 200 |
+| `GET /api/v1/exams/classes/{classId}` | GET | ✅ 200 |
+| `GET /api/v1/exams/{examId}/results` | GET | ✅ 200 |
+| `GET /api/v1/attendances?date=2026-04-28` | GET | ✅ 200 |
+| `GET /api/v1/fees/students/{id}/assignments` | GET | ✅ 200 |
+| `GET /api/v1/students` | GET | ❌ 403 |
+| `POST /api/v1/exams` | POST | ❌ 403 |
+| `GET /api/v1/tenants` | GET | ❌ 403 |
+
+### 9.4 PARENT — Allowed vs Forbidden
+
+```bash
+# Login as PARENT
+PARENT_TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -H "X-Tenant-ID: greenwood" \
+  -d '{"username":"parent.johnson","password":"ParentPass123!"}' \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['accessToken'])")
+```
+
+| Endpoint | Method | Expected Status |
+|----------|--------|-----------------|
+| `GET /api/v1/parents/me/children` | GET | ✅ 200 |
+| `GET /api/v1/attendances?date=2026-04-28` | GET | ✅ 200 |
+| `GET /api/v1/fees/students/{childId}/assignments` | GET | ✅ 200 |
+| `GET /api/v1/exams/{examId}/results` | GET | ✅ 200 |
+| `GET /api/v1/homework/classes/{classId}` | GET | ✅ 200 |
+| `GET /api/v1/timetable/classes/{classId}/sections/{sectionId}` | GET | ✅ 200 |
+| `GET /api/v1/students` | GET | ❌ 403 |
+| `POST /api/v1/attendances` | POST | ❌ 403 |
+| `GET /api/v1/tenants` | GET | ❌ 403 |
+
+### 9.5 Unauthenticated Access
+
+All endpoints except `POST /api/v1/auth/login` and `GET /api/v1/plans` require a valid JWT:
+
+```bash
+# No token → 401
+curl -s http://localhost:8080/api/v1/students -H "X-Tenant-ID: greenwood"
+# → { "success": false, "message": "..." }  HTTP 401
+
+# Invalid token → 401
+curl -s http://localhost:8080/api/v1/students \
+  -H "Authorization: Bearer invalid.token.here" \
+  -H "X-Tenant-ID: greenwood"
+# → HTTP 401
+```

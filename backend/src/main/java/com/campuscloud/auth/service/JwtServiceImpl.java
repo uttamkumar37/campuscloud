@@ -37,6 +37,11 @@ public class JwtServiceImpl implements JwtService {
     @Override
     public String generateAccessToken(UserDetails userDetails) {
         Map<String, Object> claims = new HashMap<>();
+        String primaryRole = userDetails.getAuthorities().stream()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .findFirst()
+                .orElse("");
+        claims.put("role", primaryRole);
         claims.put("roles", userDetails.getAuthorities().stream().map(a -> a.getAuthority()).toList());
         claims.put("tenant", TenantContext.getTenant());
         if (userDetails instanceof CampusUserDetails campus) {

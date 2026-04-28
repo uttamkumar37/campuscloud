@@ -1,5 +1,6 @@
 # CampusCloud — Setup Guide
 
+
 > Version: 1.0 | Last Updated: 2026-04-28
 
 This guide walks through every option for running CampusCloud locally: Docker Compose (recommended), manual local setup, and first-time initialization.
@@ -286,7 +287,7 @@ cd frontend
 npm run lint
 ```
 
-See [TESTING.md](./TESTING.md) for the complete testing guide.
+See [09_TESTING.md](./09_TESTING.md) for the complete testing guide.
 
 ---
 

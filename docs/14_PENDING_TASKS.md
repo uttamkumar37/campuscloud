@@ -1,6 +1,7 @@
 # CampusCloud — Pending Tasks
 
-> Last Updated: 2026-04-28 | See [PROJECT_TRACKER.md](./PROJECT_TRACKER.md) for completed work.
+
+> Last Updated: 2026-04-28 | See [13_PROJECT_TRACKER.md](./13_PROJECT_TRACKER.md) for completed work.
 
 ---
 
@@ -258,4 +259,4 @@ Integrate Razorpay (or Stripe) so tenants can pay online and subscriptions activ
 2. On success, poll `GET /api/v1/tenants/{tenantId}/subscription` to confirm activation.
 
 ### References
-- See `docs/PAYMENT_FLOW.md` for full sequence diagram.
+- See `docs/12_PAYMENT_FLOW.md` for full sequence diagram.

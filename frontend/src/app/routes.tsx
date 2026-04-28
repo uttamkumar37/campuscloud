@@ -67,6 +67,31 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: 'dashboard', element: <DashboardPage /> },
+      // Role-specific dashboard aliases — all resolve to the same branched DashboardPage
+      {
+        path: 'teacher/dashboard',
+        element: (
+          <PrivateRoute allowedRoles={['TEACHER']}>
+            <DashboardPage />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: 'student/dashboard',
+        element: (
+          <PrivateRoute allowedRoles={['STUDENT']}>
+            <DashboardPage />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: 'parent/dashboard',
+        element: (
+          <PrivateRoute allowedRoles={['PARENT']}>
+            <DashboardPage />
+          </PrivateRoute>
+        ),
+      },
       {
         path: 'students',
         element: (

@@ -1,4 +1,9 @@
-# Role Matrix
+# CampusCloud — Role Matrix
+
+
+> Version: 1.0 | Last Updated: 2026-04-28
+
+---
 
 ## Roles
 
@@ -19,16 +24,23 @@
 | **Assign Plan to Tenant** | ✅ | ❌ | ❌ | ❌ | ❌ |
 | **Record Payment** | ✅ | ❌ | ❌ | ❌ | ❌ |
 | **User Management** | ✅ Create users for any tenant | ✅ Create TEACHER / STUDENT / PARENT | ❌ | ❌ | ❌ |
-| **Students** | ❌ | ✅ Full CRUD | ✅ View | ✅ Own data | ❌ |
-| **Teachers** | ❌ | ✅ Full CRUD | ✅ Own profile | ❌ | ❌ |
-| **Academic Classes / Subjects** | ❌ | ✅ Full CRUD | ✅ View | ✅ View | ❌ |
-| **Attendance** | ❌ | ✅ | ✅ Mark & View | ✅ Own | ✅ Children |
-| **Fees** | ❌ | ✅ Full CRUD | ❌ | ✅ Own | ✅ Children |
-| **Exams / Marks** | ❌ | ✅ Full CRUD | ✅ Enter marks | ✅ Own | ✅ Children |
-| **Homework** | ❌ | ✅ | ✅ Create & Manage | ✅ View | ✅ Children |
-| **Timetable** | ❌ | ✅ | ✅ View | ✅ View | ✅ View |
+| **Students — Create** | ✅ | ✅ | ❌ | ❌ | ❌ |
+| **Students — Read** | ✅ | ✅ | ✅ View | ❌ | ❌ |
+| **Teachers** | ❌ | ✅ Full CRUD | ✅ View | ❌ | ❌ |
+| **Academic Classes / Subjects** | ❌ | ✅ Full CRUD | ✅ View | ❌ | ❌ |
+| **Attendance — Mark** | ❌ | ✅ | ✅ | ❌ | ❌ |
+| **Attendance — Read** | ❌ | ✅ | ✅ | ✅ Own | ✅ Children |
+| **Fees — Assign / Record Payment** | ❌ | ✅ | ❌ | ❌ | ❌ |
+| **Fees — Read Assignments** | ❌ | ✅ | ❌ | ✅ Own | ✅ Children |
+| **Exams — Create / Enter Results** | ❌ | ✅ | ✅ | ❌ | ❌ |
+| **Exams — Read / View Results** | ❌ | ✅ | ✅ | ✅ Own | ✅ Children |
+| **Homework — Create** | ❌ | ✅ | ✅ | ❌ | ❌ |
+| **Homework — Read** | ❌ | ✅ | ✅ | ✅ View | ✅ Children |
+| **Timetable — Create** | ❌ | ✅ | ✅ | ❌ | ❌ |
+| **Timetable — Read** | ❌ | ✅ | ✅ | ✅ View | ✅ View |
+| **Parent Portal (my children)** | ❌ | ❌ | ❌ | ❌ | ✅ |
 | **Bulk Upload** | ❌ | ✅ (PRO+ plan required) | ❌ | ❌ | ❌ |
-| **Dashboard** | ✅ Super Admin summary | ✅ Tenant summary | ✅ Tenant summary | ✅ Own | ✅ Own |
+| **Dashboard** | ✅ Super Admin summary | ✅ Tenant summary | ✅ Tenant summary | ✅ Own view | ✅ Own view |
 
 ## Spring Security Role Enforcement
 
@@ -52,12 +64,16 @@ JWT access tokens include:
 {
   "sub": "username",
   "role": "SCHOOL_ADMIN",
-  "tenantId": "greenwood",
-  "userId": 42
+  "roles": ["ROLE_SCHOOL_ADMIN"],
+  "tenant": "greenwood",
+  "tenant_schema": "greenwood",
+  "user_id": "550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 
-- `tenantId` is set as `X-Tenant-ID` header in every frontend API request.
+- `role` (singular) is the primary role string without the `ROLE_` prefix — used by the frontend for routing and UI gating.
+- `roles` (array) contains Spring Security authority strings (`ROLE_*`) — used internally.
+- `tenant` / `tenant_schema` is set as `X-Tenant-ID` header in every frontend API request.
 - Backend `TenantFilter` reads this header and sets `TenantContext` for schema routing.
 - `SUPER_ADMIN` does not have a `tenantId` — requests routed to `public` schema.
 

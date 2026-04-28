@@ -22,7 +22,11 @@ export function PrivateRoute({
   }
 
   if (allowedRoles && role && !allowedRoles.includes(role)) {
-    return <Navigate to={role === 'SUPER_ADMIN' ? '/super-admin/dashboard' : '/dashboard'} replace />
+    if (role === 'SUPER_ADMIN') return <Navigate to="/super-admin/dashboard" replace />
+    if (role === 'TEACHER') return <Navigate to="/teacher/dashboard" replace />
+    if (role === 'STUDENT') return <Navigate to="/student/dashboard" replace />
+    if (role === 'PARENT') return <Navigate to="/parent/dashboard" replace />
+    return <Navigate to="/dashboard" replace />
   }
 
   return children

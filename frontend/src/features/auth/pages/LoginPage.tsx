@@ -33,9 +33,15 @@ export function LoginPage() {
       const returnedTenantId = response.data?.tenantId ?? formValues.tenantId
 
       setAuthSession(response.data, returnedTenantId)
-      navigate(response.data.role === 'SUPER_ADMIN' ? '/super-admin/dashboard' : '/dashboard', {
-        replace: true,
-      })
+
+      const role = response.data.role
+      let redirectPath = '/dashboard'
+      if (role === 'SUPER_ADMIN') redirectPath = '/super-admin/dashboard'
+      else if (role === 'TEACHER') redirectPath = '/teacher/dashboard'
+      else if (role === 'STUDENT') redirectPath = '/student/dashboard'
+      else if (role === 'PARENT') redirectPath = '/parent/dashboard'
+
+      navigate(redirectPath, { replace: true })
     } catch {
       setFormError('Unable to sign in. Check credentials and tenant ID.')
     }

@@ -1,5 +1,6 @@
 # CampusCloud — API Documentation
 
+
 > Version: 1.0 | Last Updated: 2026-04-28 | Base URL: `http://localhost:8080/api/v1`
 
 ---
@@ -343,7 +344,7 @@ Content-Type: application/json
 
 **Endpoint:** `POST /students`
 
-**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, TEACHER
+**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN
 
 **Headers:**
 ```
@@ -759,7 +760,7 @@ PENDING → OVERDUE  (if due date passes without full payment)
 
 **Endpoint:** `GET /fees/students/{studentId}/assignments`
 
-**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
+**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, STUDENT, PARENT
 
 **Response (200 OK):** `List<FeeAssignmentResponse>`
 

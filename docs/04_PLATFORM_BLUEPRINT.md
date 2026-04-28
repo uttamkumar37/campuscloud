@@ -1,5 +1,6 @@
 # CampusCloud — Platform Blueprint
 
+
 > Version: 1.0 | Last Updated: 2026-04-28
 
 This document explains how CampusCloud works from the perspective of each user role, covering workflows, access boundaries, and system capabilities.
@@ -274,6 +275,8 @@ The School Admin manages all operations within their school.
 ## 6. Teacher Workflows
 
 Teachers focus on academic delivery, attendance, and assessment.
+
+> **Access boundary:** Teachers can **read** student records but **cannot create or modify** students or user accounts. All creation is handled by the School Admin.
 
 ### 6.1 Daily Attendance
 

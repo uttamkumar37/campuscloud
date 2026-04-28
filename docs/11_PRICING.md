@@ -1,4 +1,7 @@
-# Pricing Plans
+# CampusCloud — Pricing Plans
+
+
+> Version: 1.0 | Last Updated: 2026-04-28
 
 CampusCloud offers four tiers. All plans include core school management. Advanced features are gated by plan.
 
