@@ -167,6 +167,19 @@ How to import and use the Postman collection:
 
 ---
 
+## 14. [15_COMMANDS.md](./15_COMMANDS.md)
+**All commands cheatsheet**
+
+- Docker Compose (up, down, build, logs, shell)
+- Local development without Docker (backend + frontend)
+- Maven build/test/package commands
+- Git workflow commands
+- PostgreSQL / psql commands
+- GitHub Actions CI/CD — how to trigger manually, how to re-enable
+- Useful one-liners for debugging
+
+---
+
 ## Quick Reference
 
 ### Key URLs (local)

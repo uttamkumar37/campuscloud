@@ -1,9 +1,8 @@
 name: CampusCloud CI/CD
 
+# ⚠️  CI/CD disabled for local development — trigger manually from GitHub Actions tab
+# To re-enable for production: restore `push: branches: [main]` below
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
 
 permissions:
