@@ -212,6 +212,22 @@
             },
             "description": "Login as PARENT. Saves token to parent_token environment variable."
           }
+        },
+        {
+          "name": "Get Current User (me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" },
+              { "key": "X-Tenant-ID", "value": "{{tenantSchema}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            },
+            "description": "Returns profile of the authenticated user. Omit X-Tenant-ID for Super Admin."
+          }
         }
       ]
     },
@@ -309,6 +325,56 @@
                 "{{targetTenantId}}"
               ]
             }
+          }
+        },
+        {
+          "name": "Subscribe Tenant to Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"{{planId}}\",\n  \"durationDays\": 365\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{targetTenantId}}/subscribe",
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants", "{{targetTenantId}}", "subscribe"]
+            },
+            "description": "SUPER_ADMIN only. No X-Tenant-ID required."
+          }
+        },
+        {
+          "name": "Get Tenant Subscription",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{targetTenantId}}/subscription",
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants", "{{targetTenantId}}", "subscription"]
+            },
+            "description": "SUPER_ADMIN only. Returns null data if no active subscription."
+          }
+        },
+        {
+          "name": "Cancel Tenant Subscription",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/tenants/{{targetTenantId}}/subscription",
+              "host": ["{{baseUrl}}"],
+              "path": ["tenants", "{{targetTenantId}}", "subscription"]
+            },
+            "description": "SUPER_ADMIN only. Sets subscription status to CANCELLED."
           }
         }
       ]
@@ -502,6 +568,22 @@
               ]
             }
           }
+        },
+        {
+          "name": "Delete Student",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "X-Tenant-ID", "value": "{{tenantSchema}}" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/students/{{studentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["students", "{{studentId}}"]
+            },
+            "description": "SUPER_ADMIN or SCHOOL_ADMIN. Returns 204 No Content."
+          }
         }
       ]
     },
@@ -612,6 +694,22 @@
                 "{{teacherId}}"
               ]
             }
+          }
+        },
+        {
+          "name": "Delete Teacher",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "X-Tenant-ID", "value": "{{tenantSchema}}" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/teachers/{{teacherId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["teachers", "{{teacherId}}"]
+            },
+            "description": "SUPER_ADMIN or SCHOOL_ADMIN. Returns 204 No Content."
           }
         }
       ]
@@ -1247,7 +1345,7 @@
           }
         },
         {
-          "name": "List attendance",
+          "name": "List attendance by date",
           "request": {
             "method": "GET",
             "header": [
@@ -1265,7 +1363,7 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/attendances?page=0&size=20",
+              "raw": "{{baseUrl}}/attendances?date=2026-04-30",
               "host": [
                 "{{baseUrl}}"
               ],
@@ -1274,15 +1372,13 @@
               ],
               "query": [
                 {
-                  "key": "page",
-                  "value": "0"
-                },
-                {
-                  "key": "size",
-                  "value": "20"
+                  "key": "date",
+                  "value": "2026-04-30",
+                  "description": "ISO 8601 date (YYYY-MM-DD). Required."
                 }
               ]
-            }
+            },
+            "description": "Returns all attendance records for the given date. `date` query param is required."
           }
         },
         {
@@ -1318,79 +1414,199 @@
       ]
     },
     {
-      "name": "Admin (path /api — not v1)",
+      "name": "Homework",
       "item": [
         {
-          "name": "Create user (legacy DTO)",
+          "name": "Create homework assignment",
           "request": {
             "method": "POST",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "X-Tenant-ID",
-                "value": "{{tenantSchema}}"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Tenant-ID", "value": "{{tenantSchema}}" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"username\": \"user1\",\n  \"email\": \"u1@school.com\",\n  \"password\": \"Password123\",\n  \"role\": \"STUDENT\",\n  \"tenantId\": \"{{tenantSchema}}\"\n}"
+              "raw": "{\n  \"title\": \"Chapter 5 Exercises\",\n  \"instructions\": \"Complete problems 1-20 on page 87\",\n  \"classId\": \"{{classId}}\",\n  \"sectionId\": \"{{sectionId}}\",\n  \"dueDate\": \"2026-05-02\"\n}"
             },
             "url": {
-              "raw": "{{apiRoot}}/api/admin/users",
-              "host": [
-                "{{apiRoot}}"
-              ],
-              "path": [
-                "api",
-                "admin",
-                "users"
-              ]
+              "raw": "{{baseUrl}}/homework",
+              "host": ["{{baseUrl}}"],
+              "path": ["homework"]
             },
-            "description": "Uses /api/admin not /api/v1. Align frontend or backend if you need /api/v1/admin."
+            "description": "SCHOOL_ADMIN or TEACHER. sectionId and dueDate are optional."
           }
         },
         {
-          "name": "Update user role",
+          "name": "List homework for class",
           "request": {
-            "method": "PUT",
+            "method": "GET",
             "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              },
-              {
-                "key": "X-Tenant-ID",
-                "value": "{{tenantSchema}}"
-              },
-              {
-                "key": "Authorization",
-                "value": "Bearer {{token}}"
-              }
+              { "key": "X-Tenant-ID", "value": "{{tenantSchema}}" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/homework/classes/{{classId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["homework", "classes", "{{classId}}"]
+            },
+            "description": "SCHOOL_ADMIN, TEACHER, STUDENT, or PARENT."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Timetable",
+      "item": [
+        {
+          "name": "Create timetable slot",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Tenant-ID", "value": "{{tenantSchema}}" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"role\": \"TEACHER\"\n}"
+              "raw": "{\n  \"classId\": \"{{classId}}\",\n  \"sectionId\": \"{{sectionId}}\",\n  \"subjectId\": \"{{subjectId}}\",\n  \"teacherId\": \"{{teacherId}}\",\n  \"dayOfWeek\": 1,\n  \"startTime\": \"08:00\",\n  \"endTime\": \"09:00\",\n  \"label\": \"Mathematics - Period 1\"\n}"
             },
             "url": {
-              "raw": "{{apiRoot}}/api/admin/users/{{userId}}/role",
-              "host": [
-                "{{apiRoot}}"
-              ],
-              "path": [
-                "api",
-                "admin",
-                "users",
-                "{{userId}}",
-                "role"
-              ]
-            }
+              "raw": "{{baseUrl}}/timetable/slots",
+              "host": ["{{baseUrl}}"],
+              "path": ["timetable", "slots"]
+            },
+            "description": "SCHOOL_ADMIN or TEACHER. teacherId is optional."
+          }
+        },
+        {
+          "name": "Get timetable for class and section",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Tenant-ID", "value": "{{tenantSchema}}" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/timetable/classes/{{classId}}/sections/{{sectionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["timetable", "classes", "{{classId}}", "sections", "{{sectionId}}"]
+            },
+            "description": "SCHOOL_ADMIN, TEACHER, STUDENT, or PARENT."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Parents",
+      "item": [
+        {
+          "name": "Get my children",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "X-Tenant-ID", "value": "{{tenantSchema}}" },
+              { "key": "Authorization", "value": "Bearer {{parent_token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/parents/me/children",
+              "host": ["{{baseUrl}}"],
+              "path": ["parents", "me", "children"]
+            },
+            "description": "PARENT role only. Returns list of linked students."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Subscription Plans",
+      "item": [
+        {
+          "name": "List active plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["plans"]
+            },
+            "description": "Public endpoint — no authentication required."
+          }
+        },
+        {
+          "name": "Get plan by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/plans/{{planId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["plans", "{{planId}}"]
+            },
+            "description": "Any authenticated user."
+          }
+        },
+        {
+          "name": "Create plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"PRO\",\n  \"price\": 7999.00,\n  \"billingCycleDays\": 30,\n  \"maxStudents\": 1500,\n  \"maxTeachers\": 150,\n  \"description\": \"For large schools\",\n  \"features\": [\"STUDENT_MANAGEMENT\", \"TEACHER_MANAGEMENT\", \"BULK_UPLOAD\", \"PARENT_PORTAL\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["plans"]
+            },
+            "description": "SUPER_ADMIN only. No X-Tenant-ID required."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Platform Payments",
+      "item": [
+        {
+          "name": "Record payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tenantId\": \"{{targetTenantId}}\",\n  \"subscriptionId\": \"{{subscriptionId}}\",\n  \"amount\": 7999.00,\n  \"paymentDate\": \"2026-04-30\",\n  \"paymentMethod\": \"BANK_TRANSFER\",\n  \"referenceNo\": \"TXN-2026-001\",\n  \"notes\": \"Annual PRO plan payment\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/payments",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments"]
+            },
+            "description": "SUPER_ADMIN only. When subscriptionId provided, subscription paymentStatus is set to PAID."
+          }
+        },
+        {
+          "name": "Get payments by tenant",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/payments/tenant/{{targetTenantId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["payments", "tenant", "{{targetTenantId}}"]
+            },
+            "description": "SUPER_ADMIN only. Returns all payments for the tenant in reverse chronological order."
           }
         }
       ]

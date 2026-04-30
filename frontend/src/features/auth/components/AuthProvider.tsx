@@ -9,6 +9,7 @@ interface AuthContextValue {
   tenantId: string | null
   username: string | null
   role: UserRole | null
+  userId: string | null
   isAuthenticated: boolean
   isSuperAdmin: boolean
   setAuthSession: (response: LoginResponse, tenantId?: string | null) => void
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
   const [tenantId, setTenantId] = useState<string | null>(storage.getTenantId())
   const [username, setUsername] = useState<string | null>(storage.getUsername())
   const [role, setRole] = useState<UserRole | null>(storage.getRole() as UserRole | null)
+  const [userId, setUserId] = useState<string | null>(storage.getUserId())
 
   const setAuthSession = (response: LoginResponse, nextTenantId?: string | null) => {
     storage.setAccessToken(response.accessToken)
@@ -43,6 +45,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setTenantId(nextTenantId ?? null)
     setUsername(response.username)
     setRole(response.role)
+    setUserId(response.userId ?? null)
   }
 
   const logout = () => {
@@ -51,6 +54,7 @@ export function AuthProvider({ children }: PropsWithChildren) {
     setTenantId(null)
     setUsername(null)
     setRole(null)
+    setUserId(null)
   }
 
   const value = useMemo(
@@ -59,12 +63,13 @@ export function AuthProvider({ children }: PropsWithChildren) {
       tenantId,
       username,
       role,
+      userId,
       isAuthenticated: Boolean(accessToken && role),
       isSuperAdmin: role === 'SUPER_ADMIN',
       setAuthSession,
       logout,
     }),
-    [accessToken, role, tenantId, username],
+    [accessToken, role, tenantId, userId, username],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

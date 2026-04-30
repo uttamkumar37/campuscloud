@@ -1,16 +1,15 @@
 package com.campuscloud.timetable.entity;
 
+import com.campuscloud.common.audit.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.time.LocalTime;
 import java.util.UUID;
 
@@ -18,7 +17,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "timetable_slots")
-public class TimetableSlot {
+public class TimetableSlot extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -48,11 +47,4 @@ public class TimetableSlot {
     @Column(length = 80)
     private String label;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @PrePersist
-    void onCreate() {
-        this.createdAt = Instant.now();
-    }
 }

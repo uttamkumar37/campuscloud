@@ -9,4 +9,6 @@ import java.util.UUID;
 public interface ParentStudentRepository extends JpaRepository<ParentStudent, UUID> {
 
     List<ParentStudent> findByParentUserId(UUID parentUserId);
+
+    boolean existsByParentUserIdAndStudentId(UUID parentUserId, UUID studentId);
 }

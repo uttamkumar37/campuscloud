@@ -3,7 +3,9 @@ package com.campuscloud.attendance.controller;
 import com.campuscloud.attendance.dto.AttendanceCreateRequest;
 import com.campuscloud.attendance.dto.AttendanceResponse;
 import com.campuscloud.attendance.service.AttendanceService;
+import com.campuscloud.auth.security.CampusUserDetails;
 import com.campuscloud.common.api.ApiResponse;
+import com.campuscloud.common.security.OwnershipChecker;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -31,6 +35,7 @@ import java.util.UUID;
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
+    private final OwnershipChecker ownershipChecker;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER')")
@@ -49,8 +54,12 @@ public class AttendanceController {
             @Parameter(name = "X-Tenant-ID", description = "Tenant schema identifier", required = true),
             @Parameter(name = "Authorization", description = "Bearer JWT token", required = true)
     })
-    public ResponseEntity<ApiResponse<AttendanceResponse>> getAttendanceById(@PathVariable UUID attendanceId) {
-        AttendanceResponse response = attendanceService.getAttendanceById(attendanceId);
+    public ResponseEntity<ApiResponse<AttendanceResponse>> getAttendanceById(
+            @PathVariable UUID attendanceId,
+            @AuthenticationPrincipal CampusUserDetails caller
+    ) {
+        Set<UUID> allowed = ownershipChecker.resolveAllowedStudentIds(caller).orElse(null);
+        AttendanceResponse response = attendanceService.getAttendanceById(attendanceId, allowed);
         return ResponseEntity.ok(ApiResponse.success("Attendance record fetched successfully", response));
     }
 
@@ -61,9 +70,12 @@ public class AttendanceController {
             @Parameter(name = "Authorization", description = "Bearer JWT token", required = true)
     })
     public ResponseEntity<ApiResponse<List<AttendanceResponse>>> getAttendanceByDate(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+            @AuthenticationPrincipal CampusUserDetails caller
     ) {
-        List<AttendanceResponse> response = attendanceService.getAttendanceByDate(date);
+        Set<UUID> allowed = ownershipChecker.resolveAllowedStudentIds(caller).orElse(null);
+        List<AttendanceResponse> response = attendanceService.getAttendanceByDate(date, allowed);
         return ResponseEntity.ok(ApiResponse.success("Attendance records fetched successfully", response));
     }
 }
+

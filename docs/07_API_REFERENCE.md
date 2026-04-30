@@ -41,9 +41,10 @@
 
 | Method | Endpoint | Description | Auth | X-Tenant-ID | Roles |
 |--------|----------|-------------|------|-------------|-------|
-| POST | `/students` | Enroll new student | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER |
+| POST | `/students` | Enroll new student | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN |
 | GET | `/students` | List students (paginated) | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER |
 | GET | `/students/{id}` | Get student by UUID | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER |
+| DELETE | `/students/{id}` | Soft-delete student | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN |
 
 ---
 
@@ -54,6 +55,7 @@
 | POST | `/teachers` | Create teacher record | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN |
 | GET | `/teachers` | List teachers (paginated) | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER |
 | GET | `/teachers/{id}` | Get teacher by UUID | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER |
+| DELETE | `/teachers/{id}` | Soft-delete teacher | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN |
 
 ---
 
@@ -86,7 +88,7 @@
 |--------|----------|-------------|------|-------------|-------|
 | POST | `/fees/assignments` | Assign fee to student | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN |
 | POST | `/fees/payments` | Record fee payment | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN |
-| GET | `/fees/students/{studentId}/assignments` | Get student fee history | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT |
+| GET | `/fees/students/{studentId}/assignments` | Get student fee history | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER + ownership |
 
 ---
 
@@ -97,7 +99,7 @@
 | POST | `/exams` | Schedule exam | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER |
 | GET | `/exams/classes/{classId}` | Get exams for class | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT |
 | POST | `/exams/results` | Enter exam result | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER |
-| GET | `/exams/{examId}/results` | Get results for exam | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT |
+| GET | `/exams/{examId}/results` | Get results for exam (ownership-filtered) | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT |
 
 ---
 
@@ -105,8 +107,8 @@
 
 | Method | Endpoint | Description | Auth | X-Tenant-ID | Roles |
 |--------|----------|-------------|------|-------------|-------|
-| POST | `/homework` | Create homework assignment | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER |
-| GET | `/homework/classes/{classId}` | Get homework for class | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT |
+| POST | `/homework` | Create homework assignment | Yes | Yes | SCHOOL_ADMIN, TEACHER |
+| GET | `/homework/classes/{classId}` | List homework for class | Yes | Yes | SCHOOL_ADMIN, TEACHER, STUDENT, PARENT |
 
 ---
 
@@ -114,16 +116,16 @@
 
 | Method | Endpoint | Description | Auth | X-Tenant-ID | Roles |
 |--------|----------|-------------|------|-------------|-------|
-| POST | `/timetable/slots` | Create timetable slot | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN, TEACHER |
-| GET | `/timetable/classes/{classId}/sections/{sectionId}` | Get timetable | Yes | Yes | All authenticated |
+| POST | `/timetable/slots` | Create timetable slot | Yes | Yes | SCHOOL_ADMIN, TEACHER |
+| GET | `/timetable/classes/{classId}/sections/{sectionId}` | Get timetable for class & section | Yes | Yes | SCHOOL_ADMIN, TEACHER, STUDENT, PARENT |
 
 ---
 
-## Parent Portal
+## Parents
 
 | Method | Endpoint | Description | Auth | X-Tenant-ID | Roles |
 |--------|----------|-------------|------|-------------|-------|
-| GET | `/parents/me/children` | Get linked children | Yes | Yes | PARENT |
+| GET | `/parents/me/children` | Get linked children for logged-in parent | Yes | Yes | PARENT |
 
 ---
 
@@ -131,9 +133,9 @@
 
 | Method | Endpoint | Description | Auth | X-Tenant-ID | Roles |
 |--------|----------|-------------|------|-------------|-------|
-| GET | `/dashboard/tenant-summary` | Tenant KPI summary | Yes | Yes | All authenticated |
-| GET | `/dashboard/branding` | Tenant branding info | Yes | Yes | All authenticated |
-| GET | `/dashboard/super-admin-summary` | Platform-wide stats | Yes | No | SUPER_ADMIN |
+| GET | `/dashboard/tenant-summary` | School dashboard summary | Yes | Yes | SCHOOL_ADMIN, TEACHER, STUDENT, PARENT |
+| GET | `/dashboard/branding` | Tenant branding info | Yes | Yes | SCHOOL_ADMIN, TEACHER, STUDENT, PARENT |
+| GET | `/dashboard/super-admin-summary` | Platform-wide summary | Yes | No | SUPER_ADMIN |
 
 ---
 
@@ -141,8 +143,37 @@
 
 | Method | Endpoint | Description | Auth | X-Tenant-ID | Roles |
 |--------|----------|-------------|------|-------------|-------|
-| POST | `/bulk/upload` | Upload Excel (.xlsx) file | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN |
-| GET | `/bulk/sample` | Download Excel template | Yes | Yes | SUPER_ADMIN, SCHOOL_ADMIN |
+| POST | `/bulk/upload` | Upload Excel workbook (multipart) | Yes | Yes | SCHOOL_ADMIN |
+| GET | `/bulk/sample` | Download sample XLSX template | Yes | Yes | SCHOOL_ADMIN |
+
+---
+
+## Subscription Plans
+
+| Method | Endpoint | Description | Auth | X-Tenant-ID | Roles |
+|--------|----------|-------------|------|-------------|-------|
+| GET | `/plans` | List active subscription plans | No | No | Public |
+| GET | `/plans/{id}` | Get plan by UUID | Yes | No | Any authenticated |
+| POST | `/plans` | Create subscription plan | Yes | No | SUPER_ADMIN |
+
+---
+
+## Tenant Subscriptions
+
+| Method | Endpoint | Description | Auth | X-Tenant-ID | Roles |
+|--------|----------|-------------|------|-------------|-------|
+| POST | `/tenants/{tenantId}/subscribe` | Subscribe tenant to a plan | Yes | No | SUPER_ADMIN |
+| GET | `/tenants/{tenantId}/subscription` | Get active subscription | Yes | No | SUPER_ADMIN |
+| DELETE | `/tenants/{tenantId}/subscription` | Cancel active subscription | Yes | No | SUPER_ADMIN |
+
+---
+
+## Platform Payments
+
+| Method | Endpoint | Description | Auth | X-Tenant-ID | Roles |
+|--------|----------|-------------|------|-------------|-------|
+| POST | `/payments` | Record platform payment | Yes | No | SUPER_ADMIN |
+| GET | `/payments/tenant/{tenantId}` | Get payments for tenant | Yes | No | SUPER_ADMIN |
 
 ---
 

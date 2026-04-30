@@ -1,5 +1,6 @@
 package com.campuscloud.fees.entity;
 
+import com.campuscloud.common.audit.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,13 +8,11 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -21,7 +20,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "fee_assignments")
-public class FeeAssignment {
+public class FeeAssignment extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -43,11 +42,4 @@ public class FeeAssignment {
     @Column(name = "status", nullable = false, length = 20)
     private FeeStatus status;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @PrePersist
-    void onCreate() {
-        this.createdAt = Instant.now();
-    }
 }

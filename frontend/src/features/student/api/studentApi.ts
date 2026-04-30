@@ -27,3 +27,7 @@ export async function createStudent(payload: CreateStudentRequest) {
   const { data } = await apiClient.post<ApiResponse<Student>>(ENDPOINTS.students.base, payload)
   return data
 }
+
+export async function deleteStudent(id: string) {
+  await apiClient.delete(`${ENDPOINTS.students.base}/${id}`)
+}

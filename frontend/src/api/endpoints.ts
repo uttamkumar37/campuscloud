@@ -28,11 +28,29 @@ export const ENDPOINTS = {
   academic: {
     base: '/academics',
   },
+  attendances: {
+    base: '/attendances',
+    byId: (id: string) => `/attendances/${id}`,
+  },
+  fees: {
+    assignments: '/fees/assignments',
+    payments: '/fees/payments',
+    studentAssignments: (studentId: string) => `/fees/students/${studentId}/assignments`,
+  },
+  exams: {
+    base: '/exams',
+    byClass: (classId: string) => `/exams/classes/${classId}`,
+    results: '/exams/results',
+    resultsByExam: (examId: string) => `/exams/${examId}/results`,
+  },
   homework: {
     base: '/homework',
+    byClass: (classId: string) => `/homework/classes/${classId}`,
   },
   timetable: {
-    base: '/timetable',
+    slots: '/timetable/slots',
+    byClassSection: (classId: string, sectionId: string) =>
+      `/timetable/classes/${classId}/sections/${sectionId}`,
   },
   parent: {
     myChildren: '/parents/me/children',

@@ -4,13 +4,16 @@ import { useState } from 'react'
 import { DataTable, type DataTableColumn } from '../../../components/ui/DataTable'
 import { PageHeader } from '../../../components/ui/PageHeader'
 import { Button } from '../../../components/ui/Button'
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import type { ApiResponse } from '../../../types/api'
 import { showToast } from '../../../utils/toast'
+import { useAuth } from '../../auth/hooks/useAuth'
 
 import { StudentForm } from '../components/StudentForm'
 import { useCreateStudent } from '../hooks/useCreateStudent'
+import { useDeleteStudent } from '../hooks/useDeleteStudent'
 import { useStudents } from '../hooks/useStudents'
 import type { CreateStudentRequest, Student } from '../types'
 
@@ -18,9 +21,15 @@ export function StudentsPage() {
   const [page, setPage] = useState(0)
   const size = 20
 
+  const { role } = useAuth()
+  const canDelete = role === 'SUPER_ADMIN' || role === 'SCHOOL_ADMIN'
+
   const studentsQuery = useStudents({ page, size })
   const createStudentMutation = useCreateStudent()
+  const deleteStudentMutation = useDeleteStudent()
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [deletingStudentName, setDeletingStudentName] = useState('')
 
   const students = studentsQuery.data?.data.content ?? []
   const pageInfo = studentsQuery.data?.data
@@ -62,7 +71,40 @@ export function StudentsPage() {
         </span>
       ),
     },
+    ...(canDelete
+      ? ([
+          {
+            key: 'actions',
+            header: '',
+            cell: (student) => (
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingDeleteId(student.id)
+                  setDeletingStudentName(`${student.firstName} ${student.lastName}`)
+                }}
+                className="rounded-lg px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50"
+              >
+                Delete
+              </button>
+            ),
+          },
+        ] as DataTableColumn<Student>[])
+      : []),
   ]
+
+  const handleDelete = async () => {
+    if (!pendingDeleteId) return
+    try {
+      await deleteStudentMutation.mutateAsync(pendingDeleteId)
+      showToast({ title: 'Student deleted', description: `${deletingStudentName} has been removed.`, tone: 'success' })
+    } catch {
+      showToast({ title: 'Delete failed', description: 'Unable to delete the student. Try again.', tone: 'error' })
+    } finally {
+      setPendingDeleteId(null)
+      setDeletingStudentName('')
+    }
+  }
 
   const handleCreateStudent = async (payload: CreateStudentRequest) => {
     setSubmitError(null)
@@ -102,6 +144,17 @@ export function StudentsPage() {
       <PageHeader
         title="Students"
         subtitle="Manage tenant students with secure list and create operations."
+      />
+
+      <ConfirmDialog
+        isOpen={pendingDeleteId !== null}
+        title="Delete student?"
+        description={`This will soft-delete ${deletingStudentName}. The record remains in audit logs but will no longer be active.`}
+        confirmLabel="Delete"
+        isDangerous
+        isLoading={deleteStudentMutation.isPending}
+        onConfirm={() => { void handleDelete() }}
+        onCancel={() => { setPendingDeleteId(null); setDeletingStudentName('') }}
       />
 
       <StudentForm onSubmit={handleCreateStudent} isSubmitting={createStudentMutation.isPending} />

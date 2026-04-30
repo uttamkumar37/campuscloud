@@ -1,7 +1,7 @@
 # CampusCloud — API Documentation
 
 
-> Version: 1.0 | Last Updated: 2026-04-28 | Base URL: `http://localhost:8080/api/v1`
+> Version: 1.1 | Last Updated: 2026-04-30 | Base URL: `http://localhost:8080/api/v1`
 
 ---
 
@@ -427,6 +427,18 @@ Content-Type: application/json
 
 ---
 
+### 5.4 Delete Student
+
+**Endpoint:** `DELETE /students/{id}`
+
+**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN
+
+**Path Parameter:** `id` — UUID of the student
+
+**Response (204 No Content):** Empty body.
+
+---
+
 ## 6. Teacher APIs
 
 > Requires: `X-Tenant-ID` header.
@@ -456,7 +468,7 @@ Content-Type: application/json
 | `lastName` | string | Yes | |
 | `email` | string | Yes | Normalized to lowercase; must be unique |
 | `phone` | string | No | |
-| `hireDate` | date | No | ISO 8601 (YYYY-MM-DD) |
+| `hireDate` | date | Yes | ISO 8601 (YYYY-MM-DD) |
 
 **Response (201 Created):**
 ```json
@@ -493,6 +505,18 @@ Content-Type: application/json
 **Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, TEACHER
 
 **Query Parameters:** `page`, `size`, `sort` (default: `lastName,asc`)
+
+---
+
+### 6.4 Delete Teacher
+
+**Endpoint:** `DELETE /teachers/{id}`
+
+**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN
+
+**Path Parameter:** `id` — UUID of the teacher
+
+**Response (204 No Content):** Empty body.
 
 ---
 
@@ -760,7 +784,7 @@ PENDING → OVERDUE  (if due date passes without full payment)
 
 **Endpoint:** `GET /fees/students/{studentId}/assignments`
 
-**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, STUDENT, PARENT
+**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, TEACHER (STUDENT and PARENT can access only their own data via ownership check)
 
 **Response (200 OK):** `List<FeeAssignmentResponse>`
 
@@ -897,19 +921,26 @@ PENDING → OVERDUE  (if due date passes without full payment)
 
 **Endpoint:** `POST /homework`
 
-**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, TEACHER
+**Role Access:** SCHOOL_ADMIN, TEACHER
 
 **Request Body:**
 ```json
 {
   "title": "Chapter 5 Exercises",
-  "description": "Complete problems 1–20 on page 87",
+  "instructions": "Complete problems 1–20 on page 87",
   "classId": "550e8400-...",
   "sectionId": "a1b2c3d4-...",
-  "assignedByUserId": "c9d0e1f2-...",
   "dueDate": "2026-05-02"
 }
 ```
+
+| Field | Type | Required | Notes |
+|-------|------|----------|-------|
+| `title` | string | Yes | Max 200 characters |
+| `instructions` | string | No | Free-text instructions for students |
+| `classId` | UUID | Yes | |
+| `sectionId` | UUID | No | Optional — targets all sections if omitted |
+| `dueDate` | date | No | ISO 8601 (YYYY-MM-DD) |
 
 **Response (201 Created):**
 ```json
@@ -918,7 +949,7 @@ PENDING → OVERDUE  (if due date passes without full payment)
   "data": {
     "id": "...",
     "title": "Chapter 5 Exercises",
-    "description": "Complete problems 1–20 on page 87",
+    "instructions": "Complete problems 1–20 on page 87",
     "classId": "550e8400-...",
     "sectionId": "a1b2c3d4-...",
     "assignedByUserId": "c9d0e1f2-...",
@@ -934,7 +965,7 @@ PENDING → OVERDUE  (if due date passes without full payment)
 
 **Endpoint:** `GET /homework/classes/{classId}`
 
-**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
+**Role Access:** SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
 
 **Response (200 OK):** `List<HomeworkResponse>`
 
@@ -948,7 +979,7 @@ PENDING → OVERDUE  (if due date passes without full payment)
 
 **Endpoint:** `POST /timetable/slots`
 
-**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, TEACHER
+**Role Access:** SCHOOL_ADMIN, TEACHER
 
 **Request Body:**
 ```json
@@ -956,6 +987,7 @@ PENDING → OVERDUE  (if due date passes without full payment)
   "classId": "550e8400-...",
   "sectionId": "a1b2c3d4-...",
   "subjectId": "e5f6a7b8-...",
+  "teacherId": "f1a2b3c4-...",
   "dayOfWeek": 1,
   "startTime": "08:00",
   "endTime": "09:00",
@@ -966,12 +998,13 @@ PENDING → OVERDUE  (if due date passes without full payment)
 | Field | Type | Required | Notes |
 |-------|------|----------|-------|
 | `classId` | UUID | Yes | |
-| `sectionId` | UUID | No | |
-| `subjectId` | UUID | No | |
-| `dayOfWeek` | int | Yes | 1 = Monday … 7 = Sunday |
+| `sectionId` | UUID | Yes | |
+| `subjectId` | UUID | Yes | |
+| `teacherId` | UUID | No | Optional — assigned teacher |
+| `dayOfWeek` | short | Yes | 1 = Monday … 7 = Sunday |
 | `startTime` | time | Yes | HH:mm format; must be < endTime |
 | `endTime` | time | Yes | HH:mm format |
-| `label` | string | No | Description for the slot |
+| `label` | string | No | Max 80 characters |
 
 **Response (201 Created):**
 ```json
@@ -982,6 +1015,7 @@ PENDING → OVERDUE  (if due date passes without full payment)
     "classId": "550e8400-...",
     "sectionId": "a1b2c3d4-...",
     "subjectId": "e5f6a7b8-...",
+    "teacherId": "f1a2b3c4-...",
     "dayOfWeek": 1,
     "startTime": "08:00",
     "endTime": "09:00",
@@ -997,7 +1031,7 @@ PENDING → OVERDUE  (if due date passes without full payment)
 
 **Endpoint:** `GET /timetable/classes/{classId}/sections/{sectionId}`
 
-**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
+**Role Access:** SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
 
 **Response (200 OK):** `List<TimetableSlotResponse>`
 
@@ -1044,21 +1078,43 @@ X-Tenant-ID: greenwood
 
 **Endpoint:** `GET /dashboard/tenant-summary`
 
-**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
+**Role Access:** SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
 
 **Response (200 OK):**
 ```json
 {
   "success": true,
   "data": {
-    "totalStudents": 350,
-    "totalTeachers": 28,
-    "totalClasses": 12,
     "branding": {
+      "tenantId": "greenwood",
       "schoolName": "Greenwood High School",
       "logoUrl": "https://example.com/logo.png",
       "primaryColor": "#10b981"
-    }
+    },
+    "totalStudents": 350,
+    "totalTeachers": 28,
+    "attendancePercentage": 94.5,
+    "feesCollected": 1250000.00,
+    "attendanceTrend": [
+      { "label": "Mon", "value": 95.0 },
+      { "label": "Tue", "value": 93.0 }
+    ],
+    "monthlyFeeCollection": [
+      { "label": "Jan", "value": 150000.0 },
+      { "label": "Feb", "value": 140000.0 }
+    ],
+    "recentActivity": [
+      {
+        "title": "New student enrolled",
+        "description": "Alice Johnson was enrolled in Grade 10",
+        "type": "STUDENT",
+        "occurredAt": "2026-04-28T08:30:00Z"
+      }
+    ],
+    "quickInsights": [
+      "94.5% average attendance this week",
+      "3 fee payments due today"
+    ]
   }
 }
 ```
@@ -1069,16 +1125,22 @@ X-Tenant-ID: greenwood
 
 **Endpoint:** `GET /dashboard/branding`
 
-**Role Access:** SUPER_ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
+**Role Access:** SCHOOL_ADMIN, TEACHER, STUDENT, PARENT
 
-**Response (200 OK):**
+**Response (200 OK):** Returns the full `TenantResponse` for the current tenant.
+
 ```json
 {
   "success": true,
   "data": {
+    "id": "a3d5e7f9-...",
+    "tenantId": "greenwood",
     "schoolName": "Greenwood High School",
+    "schemaName": "greenwood",
     "logoUrl": "https://example.com/logo.png",
-    "primaryColor": "#10b981"
+    "primaryColor": "#10b981",
+    "active": true,
+    "createdAt": "2026-04-28T10:00:00Z"
   }
 }
 ```
@@ -1097,8 +1159,19 @@ X-Tenant-ID: greenwood
   "success": true,
   "data": {
     "totalTenants": 15,
-    "totalUsers": 4320,
-    "activeSchools": 14
+    "activeTenants": 14,
+    "tenantsCreatedThisMonth": 3,
+    "inactiveTenants": 1,
+    "newestTenants": [
+      {
+        "id": "a3d5e7f9-...",
+        "tenantId": "greenwood",
+        "schoolName": "Greenwood High School",
+        "schemaName": "greenwood",
+        "active": true,
+        "createdAt": "2026-04-28T10:00:00Z"
+      }
+    ]
   }
 }
 ```
@@ -1107,7 +1180,7 @@ X-Tenant-ID: greenwood
 
 ## 15. Bulk Upload APIs
 
-> Requires: `X-Tenant-ID` header. Role: SUPER_ADMIN, SCHOOL_ADMIN.
+> Requires: `X-Tenant-ID` header. Role: SCHOOL_ADMIN.
 
 ### 15.1 Upload Excel File
 
@@ -1133,18 +1206,19 @@ Content-Type: multipart/form-data
 {
   "success": true,
   "data": {
+    "totalRows": 50,
     "successCount": 48,
     "failedCount": 2,
     "errors": [
       {
         "sheet": "Students",
         "row": 5,
-        "error": "Duplicate admission number: ADM-2024-010"
+        "message": "Duplicate admission number: ADM-2024-010"
       },
       {
         "sheet": "Teachers",
         "row": 3,
-        "error": "Email is required"
+        "message": "Email is required"
       }
     ]
   }

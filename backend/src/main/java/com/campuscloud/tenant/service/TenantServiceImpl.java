@@ -92,7 +92,11 @@ public class TenantServiceImpl implements TenantService {
                     role VARCHAR(40) NOT NULL,
                     tenant_id VARCHAR(80),
                     active BOOLEAN NOT NULL DEFAULT TRUE,
-                    created_at TIMESTAMPTZ NOT NULL
+                    created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ,
+                    created_by UUID,
+                    updated_by UUID,
+                    deleted_at TIMESTAMPTZ
                 )
                 """.formatted(schemaName);
 
@@ -108,7 +112,11 @@ public class TenantServiceImpl implements TenantService {
                     phone VARCHAR(30),
                     user_id UUID REFERENCES "%s".users(id),
                     active BOOLEAN NOT NULL DEFAULT TRUE,
-                    created_at TIMESTAMPTZ NOT NULL
+                    created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ,
+                    created_by UUID,
+                    updated_by UUID,
+                    deleted_at TIMESTAMPTZ
                 )
                 """.formatted(schemaName, schemaName);
 
@@ -123,7 +131,10 @@ public class TenantServiceImpl implements TenantService {
                     hire_date DATE NOT NULL,
                     user_id UUID REFERENCES "%s".users(id),
                     active BOOLEAN NOT NULL DEFAULT TRUE,
-                    created_at TIMESTAMPTZ NOT NULL
+                    created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ,
+                    created_by UUID,
+                    updated_by UUID
                 )
                 """.formatted(schemaName, schemaName);
 
@@ -168,6 +179,9 @@ public class TenantServiceImpl implements TenantService {
                     remarks VARCHAR(255),
                     marked_by_user_id UUID NOT NULL,
                     created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ,
+                    created_by UUID,
+                    updated_by UUID,
                     CONSTRAINT uq_attendance_student_date UNIQUE (student_id, attendance_date)
                 )
                 """.formatted(schemaName, schemaName, schemaName, schemaName);
@@ -180,7 +194,10 @@ public class TenantServiceImpl implements TenantService {
                     amount NUMERIC(12,2) NOT NULL,
                     due_date DATE NOT NULL,
                     status VARCHAR(20) NOT NULL,
-                    created_at TIMESTAMPTZ NOT NULL
+                    created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ,
+                    created_by UUID,
+                    updated_by UUID
                 )
                 """.formatted(schemaName, schemaName);
 
@@ -193,7 +210,10 @@ public class TenantServiceImpl implements TenantService {
                     payment_method VARCHAR(30) NOT NULL,
                     reference_no VARCHAR(80),
                     received_by_user_id UUID NOT NULL,
-                    created_at TIMESTAMPTZ NOT NULL
+                    created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ,
+                    created_by UUID,
+                    updated_by UUID
                 )
                 """.formatted(schemaName, schemaName);
 
@@ -208,6 +228,9 @@ public class TenantServiceImpl implements TenantService {
                     max_marks NUMERIC(6,2) NOT NULL,
                     active BOOLEAN NOT NULL DEFAULT TRUE,
                     created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ,
+                    created_by UUID,
+                    updated_by UUID,
                     CONSTRAINT uq_exam_schedule UNIQUE (title, exam_date, class_id, section_id, subject_id)
                 )
                 """.formatted(schemaName, schemaName, schemaName, schemaName);
@@ -222,6 +245,9 @@ public class TenantServiceImpl implements TenantService {
                     remarks VARCHAR(255),
                     published BOOLEAN NOT NULL DEFAULT FALSE,
                     created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ,
+                    created_by UUID,
+                    updated_by UUID,
                     CONSTRAINT uq_exam_result_student UNIQUE (exam_id, student_id)
                 )
                 """.formatted(schemaName, schemaName, schemaName);
@@ -262,7 +288,10 @@ public class TenantServiceImpl implements TenantService {
                     section_id UUID REFERENCES "%s".sections(id),
                     assigned_by_user_id UUID NOT NULL,
                     due_date DATE,
-                    created_at TIMESTAMPTZ NOT NULL
+                    created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ,
+                    created_by UUID,
+                    updated_by UUID
                 )
                 """.formatted(schemaName, schemaName, schemaName);
 
@@ -277,7 +306,10 @@ public class TenantServiceImpl implements TenantService {
                     start_time TIME NOT NULL,
                     end_time TIME NOT NULL,
                     label VARCHAR(80),
-                    created_at TIMESTAMPTZ NOT NULL
+                    created_at TIMESTAMPTZ NOT NULL,
+                    updated_at TIMESTAMPTZ,
+                    created_by UUID,
+                    updated_by UUID
                 )
                 """.formatted(schemaName, schemaName, schemaName, schemaName, schemaName);
 
@@ -302,6 +334,22 @@ public class TenantServiceImpl implements TenantService {
         jdbcTemplate.execute(createParentStudentsTable);
         jdbcTemplate.execute(createHomeworkTable);
         jdbcTemplate.execute(createTimetableTable);
+
+        // Add audit columns to all tables for existing tenants (safe no-op when columns already present)
+        String[] auditTables = {"users", "students", "teachers", "attendance_records", "fee_assignments",
+                "fee_payments", "exams", "exam_results", "homework_assignments", "timetable_slots"};
+        for (String table : auditTables) {
+            jdbcTemplate.execute("ALTER TABLE \"" + schemaName + "\".\"" + table + "\" ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ");
+            jdbcTemplate.execute("ALTER TABLE \"" + schemaName + "\".\"" + table + "\" ADD COLUMN IF NOT EXISTS created_by UUID");
+            jdbcTemplate.execute("ALTER TABLE \"" + schemaName + "\".\"" + table + "\" ADD COLUMN IF NOT EXISTS updated_by UUID");
+        }
+
+        // Add soft-delete column for users, students, teachers
+        String[] softDeleteTables = {"users", "students", "teachers"};
+        for (String table : softDeleteTables) {
+            jdbcTemplate.execute("ALTER TABLE \"" + schemaName + "\".\"" + table + "\" ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ");
+        }
+
         jdbcTemplate.execute(idxUsername);
         jdbcTemplate.execute(idxEmail);
         jdbcTemplate.execute(idxAdmissionNo);

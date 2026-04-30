@@ -3,22 +3,31 @@ import { useState } from 'react'
 
 import { DataTable, type DataTableColumn } from '../../../components/ui/DataTable'
 import { Button } from '../../../components/ui/Button'
+import { ConfirmDialog } from '../../../components/ui/ConfirmDialog'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { PageHeader } from '../../../components/ui/PageHeader'
 import { Skeleton } from '../../../components/ui/Skeleton'
 import type { ApiResponse } from '../../../types/api'
 import { showToast } from '../../../utils/toast'
+import { useAuth } from '../../auth/hooks/useAuth'
 
 import { TeacherForm } from '../components/TeacherForm'
 import { useCreateTeacher } from '../hooks/useCreateTeacher'
+import { useDeleteTeacher } from '../hooks/useDeleteTeacher'
 import { useTeachers } from '../hooks/useTeachers'
 import type { CreateTeacherRequest, Teacher } from '../types'
 
 export function TeachersPage() {
   const [page, setPage] = useState(0)
   const size = 20
+  const { role } = useAuth()
+  const canDelete = role === 'SUPER_ADMIN' || role === 'SCHOOL_ADMIN'
+
   const teachersQuery = useTeachers({ page, size })
   const createTeacherMutation = useCreateTeacher()
+  const deleteTeacherMutation = useDeleteTeacher()
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [deletingTeacherName, setDeletingTeacherName] = useState('')
 
   const teachers = teachersQuery.data?.data.content ?? []
   const pageInfo = teachersQuery.data?.data
@@ -62,7 +71,40 @@ export function TeachersPage() {
         </span>
       ),
     },
+    ...(canDelete
+      ? ([
+          {
+            key: 'actions',
+            header: '',
+            cell: (teacher) => (
+              <button
+                type="button"
+                onClick={() => {
+                  setPendingDeleteId(teacher.id)
+                  setDeletingTeacherName(`${teacher.firstName} ${teacher.lastName}`)
+                }}
+                className="rounded-lg px-2 py-1 text-xs font-medium text-rose-600 hover:bg-rose-50"
+              >
+                Delete
+              </button>
+            ),
+          },
+        ] as DataTableColumn<Teacher>[])
+      : []),
   ]
+
+  const handleDelete = async () => {
+    if (!pendingDeleteId) return
+    try {
+      await deleteTeacherMutation.mutateAsync(pendingDeleteId)
+      showToast({ title: 'Teacher deleted', description: `${deletingTeacherName} has been removed.`, tone: 'success' })
+    } catch {
+      showToast({ title: 'Delete failed', description: 'Unable to delete the teacher. Try again.', tone: 'error' })
+    } finally {
+      setPendingDeleteId(null)
+      setDeletingTeacherName('')
+    }
+  }
 
   const handleCreateTeacher = async (payload: CreateTeacherRequest) => {
     try {
@@ -95,6 +137,17 @@ export function TeachersPage() {
       <PageHeader
         title="Teachers"
         subtitle="Manage faculty records with paginated directory views and secure onboarding flows."
+      />
+
+      <ConfirmDialog
+        isOpen={pendingDeleteId !== null}
+        title="Delete teacher?"
+        description={`This will soft-delete ${deletingTeacherName}. The record remains in audit logs but will no longer be active.`}
+        confirmLabel="Delete"
+        isDangerous
+        isLoading={deleteTeacherMutation.isPending}
+        onConfirm={() => { void handleDelete() }}
+        onCancel={() => { setPendingDeleteId(null); setDeletingTeacherName('') }}
       />
 
       <TeacherForm onSubmit={handleCreateTeacher} isSubmitting={createTeacherMutation.isPending} />

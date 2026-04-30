@@ -1,15 +1,250 @@
+import { AxiosError } from 'axios'
+import { useState } from 'react'
+import type { FormEvent } from 'react'
+
+import { Button } from '../../../components/ui/Button'
+import { Card } from '../../../components/ui/Card'
+import { DataTable, type DataTableColumn } from '../../../components/ui/DataTable'
+import { EmptyState } from '../../../components/ui/EmptyState'
+import { FormInput } from '../../../components/ui/FormInput'
 import { PageHeader } from '../../../components/ui/PageHeader'
+import { Skeleton } from '../../../components/ui/Skeleton'
+import type { ApiResponse } from '../../../types/api'
+import { showToast } from '../../../utils/toast'
+import { useAuth } from '../../auth/hooks/useAuth'
+
+import { useAssignFee, useFeeAssignments, useRecordPayment } from '../hooks/useFees'
+import type { AssignFeeRequest, FeeAssignment, FeeStatus, RecordPaymentRequest } from '../types'
+
+const STATUS_BADGE: Record<FeeStatus, string> = {
+  PENDING: 'bg-amber-100 text-amber-700',
+  PARTIALLY_PAID: 'bg-blue-100 text-blue-700',
+  PAID: 'bg-emerald-100 text-emerald-700',
+  OVERDUE: 'bg-rose-100 text-rose-700',
+}
+
+const emptyAssignForm: AssignFeeRequest = { studentId: '', feeTitle: '', amount: 0, dueDate: '' }
+const emptyPayForm: RecordPaymentRequest = {
+  feeAssignmentId: '',
+  amountPaid: 0,
+  paymentDate: new Date().toISOString().slice(0, 10),
+  paymentMethod: null,
+  referenceNo: null,
+  receivedByUserId: '',
+}
 
 export function FeesHubPage() {
+  const { userId } = useAuth()
+  const [lookupStudentId, setLookupStudentId] = useState('')
+  const [searchId, setSearchId] = useState('')
+  const [assignForm, setAssignForm] = useState<AssignFeeRequest>(emptyAssignForm)
+  const [payForm, setPayForm] = useState<RecordPaymentRequest>(emptyPayForm)
+
+  const feeQuery = useFeeAssignments(searchId)
+  const assignMutation = useAssignFee()
+  const paymentMutation = useRecordPayment()
+
+  const assignments = feeQuery.data?.data ?? []
+
+  const columns: DataTableColumn<FeeAssignment>[] = [
+    { key: 'feeTitle', header: 'Title', cell: (r) => r.feeTitle },
+    {
+      key: 'amount',
+      header: 'Amount',
+      cell: (r) => `₹ ${r.amount.toLocaleString('en-IN')}`,
+    },
+    { key: 'dueDate', header: 'Due Date', cell: (r) => r.dueDate },
+    {
+      key: 'status',
+      header: 'Status',
+      cell: (r) => (
+        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${STATUS_BADGE[r.status]}`}>
+          {r.status.replace('_', ' ')}
+        </span>
+      ),
+    },
+  ]
+
+  const handleAssign = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    try {
+      const res = await assignMutation.mutateAsync({ ...assignForm, amount: Number(assignForm.amount) })
+      if (!res.success) {
+        showToast({ title: 'Fee not assigned', description: res.message, tone: 'error' })
+        return
+      }
+      showToast({ title: 'Fee assigned', description: `${res.data.feeTitle} — ₹${res.data.amount}`, tone: 'success' })
+      setAssignForm(emptyAssignForm)
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse<unknown>>
+      showToast({ title: 'Fee not assigned', description: axiosError.response?.data?.message ?? 'Error', tone: 'error' })
+    }
+  }
+
+  const handlePayment = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    try {
+      const res = await paymentMutation.mutateAsync({
+        ...payForm,
+        amountPaid: Number(payForm.amountPaid),
+        paymentMethod: payForm.paymentMethod?.trim() || null,
+        referenceNo: payForm.referenceNo?.trim() || null,
+        receivedByUserId: userId ?? '',
+      })
+      if (!res.success) {
+        showToast({ title: 'Payment not recorded', description: res.message, tone: 'error' })
+        return
+      }
+      showToast({ title: 'Payment recorded', description: `₹${res.data.amountPaid} received`, tone: 'success' })
+      setPayForm(emptyPayForm)
+      if (searchId) feeQuery.refetch()
+    } catch (error) {
+      const axiosError = error as AxiosError<ApiResponse<unknown>>
+      showToast({
+        title: 'Payment not recorded',
+        description: axiosError.response?.data?.message ?? 'Error',
+        tone: 'error',
+      })
+    }
+  }
+
   return (
-    <section className="space-y-4">
-      <PageHeader title="Fees" subtitle="Assignments, payments, and pending balances." />
-      <div className="rounded-[28px] border border-slate-200 bg-white p-6 text-sm text-slate-600 shadow-sm">
-        <p>
-          Backend: <code className="rounded bg-slate-100 px-1">/api/v1/fees/assignments</code>,{' '}
-          <code className="rounded bg-slate-100 px-1">/api/v1/fees/payments</code>. Integrate lists and payment forms
-          here.
-        </p>
+    <section className="space-y-6">
+      <PageHeader title="Fees" subtitle="Assign fees, record payments, and track balances per student." />
+
+      {/* Assign fee form */}
+      <Card className="p-0">
+        <form className="grid gap-5 p-6" onSubmit={handleAssign}>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-950">Assign Fee</h2>
+            <p className="mt-1 text-sm text-slate-500">Create a fee obligation for a student.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormInput
+              label="Student ID (UUID)"
+              value={assignForm.studentId}
+              onChange={(v) => setAssignForm((f) => ({ ...f, studentId: v }))}
+              placeholder="550e8400-…"
+              required
+            />
+            <FormInput
+              label="Fee Title"
+              value={assignForm.feeTitle}
+              onChange={(v) => setAssignForm((f) => ({ ...f, feeTitle: v }))}
+              placeholder="Term 1 Tuition Fee"
+              required
+            />
+            <FormInput
+              label="Amount (₹)"
+              type="number"
+              value={String(assignForm.amount || '')}
+              onChange={(v) => setAssignForm((f) => ({ ...f, amount: Number(v) }))}
+              placeholder="15000"
+              required
+            />
+            <FormInput
+              label="Due Date"
+              type="date"
+              value={assignForm.dueDate}
+              onChange={(v) => setAssignForm((f) => ({ ...f, dueDate: v }))}
+              required
+            />
+          </div>
+          <div>
+            <Button type="submit" disabled={assignMutation.isPending}>
+              {assignMutation.isPending ? 'Assigning…' : 'Assign Fee'}
+            </Button>
+          </div>
+        </form>
+      </Card>
+
+      {/* Record payment form */}
+      <Card className="p-0">
+        <form className="grid gap-5 p-6" onSubmit={handlePayment}>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-950">Record Payment</h2>
+            <p className="mt-1 text-sm text-slate-500">Log a fee payment against an existing assignment.</p>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2">
+            <FormInput
+              label="Fee Assignment ID (UUID)"
+              value={payForm.feeAssignmentId}
+              onChange={(v) => setPayForm((f) => ({ ...f, feeAssignmentId: v }))}
+              placeholder="a1b2c3d4-…"
+              required
+            />
+            <FormInput
+              label="Amount Paid (₹)"
+              type="number"
+              value={String(payForm.amountPaid || '')}
+              onChange={(v) => setPayForm((f) => ({ ...f, amountPaid: Number(v) }))}
+              placeholder="5000"
+              required
+            />
+            <FormInput
+              label="Payment Date"
+              type="date"
+              value={payForm.paymentDate}
+              onChange={(v) => setPayForm((f) => ({ ...f, paymentDate: v }))}
+              required
+            />
+            <FormInput
+              label="Payment Method"
+              value={payForm.paymentMethod ?? ''}
+              onChange={(v) => setPayForm((f) => ({ ...f, paymentMethod: v }))}
+              placeholder="CASH / BANK_TRANSFER / CHEQUE"
+            />
+            <FormInput
+              label="Reference No."
+              value={payForm.referenceNo ?? ''}
+              onChange={(v) => setPayForm((f) => ({ ...f, referenceNo: v }))}
+              placeholder="RCP-20260428-001"
+            />
+          </div>
+          <div>
+            <Button type="submit" disabled={paymentMutation.isPending}>
+              {paymentMutation.isPending ? 'Saving…' : 'Record Payment'}
+            </Button>
+          </div>
+        </form>
+      </Card>
+
+      {/* Fee history lookup */}
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-end gap-4">
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-slate-950">Fee History</h2>
+            <p className="mt-1 text-sm text-slate-500">Enter a student ID to view all fee assignments.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={lookupStudentId}
+              onChange={(e) => setLookupStudentId(e.target.value)}
+              placeholder="Student UUID…"
+              className="rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 w-64"
+            />
+            <Button variant="secondary" onClick={() => setSearchId(lookupStudentId)}>
+              Search
+            </Button>
+          </div>
+        </div>
+
+        {feeQuery.isLoading ? (
+          <div className="grid gap-3">
+            <Skeleton className="h-20" />
+            <Skeleton className="h-20" />
+          </div>
+        ) : feeQuery.isError ? (
+          <EmptyState title="Unable to load fees" description="Fee records could not be fetched for this student." />
+        ) : (
+          <DataTable
+            columns={columns}
+            rows={assignments}
+            rowKey={(r) => r.id}
+            emptyText={searchId ? 'No fee assignments for this student.' : 'Enter a student ID above to load fee history.'}
+          />
+        )}
       </div>
     </section>
   )

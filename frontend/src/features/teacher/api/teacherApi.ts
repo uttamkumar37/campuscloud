@@ -24,3 +24,7 @@ export async function createTeacher(payload: CreateTeacherRequest) {
   const { data } = await apiClient.post<ApiResponse<Teacher>>(ENDPOINTS.teachers.base, payload)
   return data
 }
+
+export async function deleteTeacher(id: string) {
+  await apiClient.delete(`${ENDPOINTS.teachers.base}/${id}`)
+}

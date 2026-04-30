@@ -15,6 +15,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,5 +65,16 @@ public class StudentController {
             @PageableDefault(size = 20, sort = "lastName", direction = Sort.Direction.ASC) Pageable pageable) {
         PageResponse<StudentResponse> page = PageResponse.from(studentService.getStudents(pageable));
         return ResponseEntity.ok(ApiResponse.success("Students fetched successfully", page));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SCHOOL_ADMIN')")
+    @Operation(summary = "Soft-delete a student", parameters = {
+            @Parameter(name = "X-Tenant-ID", description = "Tenant schema identifier", required = true),
+            @Parameter(name = "Authorization", description = "Bearer JWT token", required = true)
+    })
+    public ResponseEntity<Void> deleteStudent(@PathVariable UUID id) {
+        studentService.softDeleteStudent(id);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -30,12 +30,16 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      const isSuperAdmin = storage.getRole() === 'SUPER_ADMIN'
       storage.clearAuth()
       showToast({
         title: 'Session expired',
         description: 'Please sign in again to continue.',
         tone: 'error',
       })
+      setTimeout(() => {
+        window.location.replace(isSuperAdmin ? '/super-admin/login' : '/login')
+      }, 1200)
     }
 
     return Promise.reject(error)

@@ -1,16 +1,15 @@
 package com.campuscloud.homework.entity;
 
+import com.campuscloud.common.audit.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -18,7 +17,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "homework_assignments")
-public class HomeworkAssignment {
+public class HomeworkAssignment extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -42,11 +41,4 @@ public class HomeworkAssignment {
     @Column(name = "due_date")
     private LocalDate dueDate;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @PrePersist
-    void onCreate() {
-        this.createdAt = Instant.now();
-    }
 }

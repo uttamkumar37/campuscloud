@@ -1,7 +1,7 @@
 # CampusCloud — Pending Tasks
 
 
-> Last Updated: 2026-04-28 | See [13_PROJECT_TRACKER.md](./13_PROJECT_TRACKER.md) for completed work.
+> Last Updated: 2026-04-30 | See [13_PROJECT_TRACKER.md](./13_PROJECT_TRACKER.md) for completed work.
 
 ---
 
@@ -15,248 +15,54 @@
 
 ---
 
+## ✅ Completed Since Last Update (2026-04-30)
+
+| Task | Module | Completion Notes |
+|------|--------|------------------|
+| Task 30 — Teacher Module UI | `frontend/src/features/teacher/` | `TeachersPage.tsx`, `TeacherForm.tsx`, hooks, toast notifications |
+| Task 31 — Academic Module UI | `frontend/src/features/academic/` | Classes/Subjects/Sections tabs, forms, `academicApi.ts` |
+| Task 33 — Attendance UI | `frontend/src/features/attendance/` | Date picker, class/section selector, bulk mark, report view |
+| Task 34 — Fees UI | `frontend/src/features/fees/` | Assignment form, payment form, status badge, payment history |
+| Task 35 — Marks/Exams UI | `frontend/src/features/marks/` | Exam form, result entry, results table |
+| Task 36 — Homework UI | `frontend/src/features/homework/` | Homework list, create form, overdue highlighting |
+| Task 37 — Timetable UI | `frontend/src/features/timetable/` | Weekly grid, slot form, class/section filter |
+| Task 38 — Parent Portal UI | `frontend/src/features/parent/` | My children list, per-child view (fees/attendance/results) |
+| Task 39 — Ownership-Aware Authorization | Backend/Security | `OwnershipChecker` bean; `@PreAuthorize` ownership on Fees, Attendance, Exam endpoints |
+| Task 40 — Audit Logging | Backend (all modules) | `Auditable` MappedSuperclass, `JwtAuditorAware`, `@EnableJpaAuditing`; 10 entities updated |
+| Task 41 — Soft Delete | Backend (Student, Teacher, User) | `deleted_at TIMESTAMPTZ`; soft-delete repos; `DELETE /students/{id}`, `DELETE /teachers/{id}` |
+| Task 42 — Integration Tests | Testing | Testcontainers + Failsafe; `IntegrationTestBase`; 17 IT tests (tenant provisioning, student CRUD, fee status) |
+| Task 45 — Frontend UX Hardening | Frontend (all) | `ConfirmDialog` component; delete student/teacher with confirm dialogs; 401 auto-redirect to correct login route |
+| Task 46 — Bulk Upload UI | `frontend/src/features/bulk-upload/` | File picker (.xlsx), drag-and-drop, progress bar, result card, per-row error table, sample download, instructions modal |
+| Task 47 — Documentation Update | `docs/`, `docs/postman/` | 07_API_REFERENCE.md, 08_API.md (v1.1), Postman collection: 16 folders, 49 endpoints, legacy folder removed |
+
+---
+
 ## ⚠️ In Progress
 
-### Task 30 — Frontend: Teacher Module
-
-**Module:** `frontend/src/features/teacher/`
-**Priority:** 🔴 High
-**Status:** API and hooks scaffolded; UI pages incomplete
-
-**What needs to be done:**
-- [ ] `TeachersPage.tsx` — table with pagination, column definitions
-- [ ] `TeacherForm.tsx` — create teacher form with validation
-- [ ] Wire form to `useCreateTeacher` mutation hook
-- [ ] Display success/error toast notifications
-
-**Backend ready:** ✅ `POST /teachers`, `GET /teachers`, `GET /teachers/{id}`
-
----
-
-### Task 31 — Frontend: Academic Module
-
-**Module:** `frontend/src/features/academic/`
-**Priority:** 🔴 High
-**Status:** Tabbed page scaffolded; class/subject/section forms not complete
-
-**What needs to be done:**
-- [ ] Classes tab — table + create form
-- [ ] Subjects tab — table + create form
-- [ ] Sections tab — table + create form (with class dropdown)
-- [ ] Shared `academicApi.ts` functions for all three resources
-
-**Backend ready:** ✅ All six academic endpoints
-
----
-
-### Task 32 — Frontend UX Hardening
-
-**Module:** All frontend features
-**Priority:** 🔴 High
-**Status:** Partial — some pages lack error states and loading indicators
-
-**What needs to be done:**
-- [ ] Add error boundary components for graceful failure
-- [ ] Show loading spinners on all data fetching operations
-- [ ] Display field-level validation messages from server (400 errors)
-- [ ] Confirm dialogs for destructive actions
-- [ ] Handle expired JWT gracefully (auto-logout and redirect to `/login`)
-- [ ] Implement toast notifications consistently across all mutations
+_None_
 
 ---
 
 ## ❌ Pending (Not Started)
 
-### Task 33 — Frontend: Attendance Module
+### Task 48 — Payment Gateway Integration
 
-**Module:** `frontend/src/features/attendance/`
-**Priority:** 🔴 High
-
-**What needs to be done:**
-- [ ] `AttendancePage.tsx` — date picker + class/section selector
-- [ ] Student list with status selector (PRESENT / ABSENT / LATE / EXCUSED)
-- [ ] Bulk mark attendance for a class (mark all at once)
-- [ ] Attendance report view (filter by student or date range)
-- [ ] `attendanceApi.ts` — POST + GET implementations
-- [ ] `useMarkAttendance`, `useAttendanceByDate` hooks
-
-**Backend ready:** ✅ `POST /attendances`, `GET /attendances/{id}`, `GET /attendances?date=`
-
----
-
-### Task 34 — Frontend: Fees Module
-
-**Module:** `frontend/src/features/fees/`
-**Priority:** 🔴 High
-
-**What needs to be done:**
-- [ ] Fee assignment form (student selector, title, amount, due date)
-- [ ] Fee list per student with status badge (PENDING / PARTIALLY_PAID / PAID / OVERDUE)
-- [ ] Record payment form (amount, method, reference number)
-- [ ] Payment history view
-- [ ] `feesApi.ts` — all three fee endpoints
-- [ ] `useFeeAssignments`, `useRecordPayment` hooks
-
-**Backend ready:** ✅ `POST /fees/assignments`, `POST /fees/payments`, `GET /fees/students/{id}/assignments`
-
----
-
-### Task 35 — Frontend: Marks / Exams Module
-
-**Module:** `frontend/src/features/marks/`
-**Priority:** 🔴 High
-
-**What needs to be done:**
-- [ ] Exam scheduling form (title, date, class, section, subject, max marks)
-- [ ] Exam list per class
-- [ ] Result entry form (student, marks, grade, remarks)
-- [ ] Results table per exam
-- [ ] `examApi.ts` — all four exam endpoints
-- [ ] `useExams`, `useCreateExam`, `useExamResults`, `useCreateResult` hooks
-
-**Backend ready:** ✅ `POST /exams`, `GET /exams/classes/{id}`, `POST /exams/results`, `GET /exams/{id}/results`
-
----
-
-### Task 36 — Frontend: Homework Module
-
-**Module:** `frontend/src/features/homework/`
+**Module:** Backend + Frontend
 **Priority:** 🟡 Medium
+**Depends on:** Subscription backend (V3 migration, already done)
 
 **What needs to be done:**
-- [ ] Homework list per class (cards or table with title, due date)
-- [ ] Create homework form (for TEACHER / ADMIN only)
-- [ ] Due date highlighting (overdue in red)
-- [ ] `homeworkApi.ts` — POST + GET
-- [ ] `useHomework`, `useCreateHomework` hooks
+- [ ] Add `gateway_order_id` to `tenant_subscriptions` via Flyway V4 migration
+- [ ] Create `PaymentGatewayService` interface with `createOrder()` and `verifyWebhook()`
+- [ ] Implement `RazorpayPaymentGatewayServiceImpl`
+- [ ] `POST /api/v1/tenants/{tenantId}/subscribe/initiate` → returns Razorpay `orderId`
+- [ ] `POST /api/v1/payments/webhook` → verifies signature, activates subscription
+- [ ] Store API keys via env vars: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`
+- [ ] Frontend: "Pay Online" button in `TenantSubscriptionPage.tsx` using Razorpay checkout.js
+- [ ] Frontend: poll subscription status after payment success
 
-**Backend ready:** ✅ `POST /homework`, `GET /homework/classes/{id}`
+**Reference:** See `docs/12_PAYMENT_FLOW.md` for full sequence diagram.
 
 ---
 
-### Task 37 — Frontend: Timetable Module
 
-**Module:** `frontend/src/features/timetable/`
-**Priority:** 🟡 Medium
-
-**What needs to be done:**
-- [ ] Weekly grid view (7 columns for days, rows for time slots)
-- [ ] Create timetable slot form (for ADMIN / TEACHER)
-- [ ] Filter by class and section
-- [ ] `timetableApi.ts` — POST + GET
-- [ ] `useTimetable`, `useCreateSlot` hooks
-
-**Backend ready:** ✅ `POST /timetable/slots`, `GET /timetable/classes/{id}/sections/{id}`
-
----
-
-### Task 38 — Frontend: Parent Portal
-
-**Module:** `frontend/src/features/parent/`
-**Priority:** 🟡 Medium
-
-**What needs to be done:**
-- [ ] `MyChildrenPage.tsx` — list linked children with basic info
-- [ ] Per-child view: fee status, attendance summary, recent results
-- [ ] `parentApi.ts` — `GET /parents/me/children`
-- [ ] `useMyChildren` hook
-
-**Backend ready:** ✅ `GET /parents/me/children`
-
----
-
-### Task 39 — Ownership-Aware Authorization (Backend)
-
-**Module:** Backend Security
-**Priority:** 🔴 High
-
-**Problem:** Currently, a Student with a valid JWT can technically call `GET /fees/students/{anyStudentId}/assignments` and see another student's fees. The `@PreAuthorize` only checks role, not ownership.
-
-**What needs to be done:**
-- [ ] Add ownership check in `FeesServiceImpl`: if caller role is STUDENT, verify `studentId` matches JWT subject
-- [ ] Apply similar ownership checks in `AttendanceService`, `ExamResultService`
-- [ ] Consider a `@CurrentUser` annotation / argument resolver to inject authenticated user into service layer
-- [ ] Add tests for ownership violation attempts
-
----
-
-### Task 40 — Audit Logging
-
-**Module:** Backend (all domain modules)
-**Priority:** 🟡 Medium
-
-**What needs to be done:**
-- [ ] Add `created_by UUID` and `updated_by UUID` columns to domain tables
-- [ ] Configure Spring Data JPA `@EnableJpaAuditing` with custom `AuditorAware<UUID>` that returns current user from JWT
-- [ ] Add `@CreatedBy` and `@LastModifiedBy` annotations to entity fields
-- [ ] Update Flyway migration scripts to add new columns
-
----
-
-### Task 41 — Soft Delete
-
-**Module:** Backend (Student, Teacher, User entities)
-**Priority:** 🟡 Medium
-
-**What needs to be done:**
-- [ ] Add `deleted_at TIMESTAMPTZ` column to `students`, `teachers`, `users` tables
-- [ ] Add Flyway migration for new columns
-- [ ] Override repository queries to exclude `WHERE deleted_at IS NOT NULL`
-- [ ] Replace hard delete with `deleted_at = now()` update
-- [ ] Add `DELETE /students/{id}`, `DELETE /teachers/{id}` endpoints
-
----
-
-### Task 42 — Integration Tests
-
-**Module:** Testing
-**Priority:** 🟡 Medium
-
-**What needs to be done:**
-- [ ] Add Testcontainers dependency to `pom.xml`
-- [ ] Create `@SpringBootTest` base class with PostgreSQL container
-- [ ] Write integration tests for tenant provisioning flow
-- [ ] Write integration tests for student CRUD (full round-trip)
-- [ ] Write integration tests for fee payment status transitions
-- [ ] Add Maven Failsafe plugin for integration test lifecycle
-
----
-
-### Task 43 — Frontend: Bulk Upload UI
-
-**Module:** `frontend/src/features/bulk-upload/`
-**Priority:** 🟢 Low
-
-**What needs to be done:**
-- [ ] File picker with `.xlsx` filter
-- [ ] Upload progress indicator
-- [ ] Result display (success count, error table with row/sheet/message)
-- [ ] Download sample template button (`GET /bulk/sample`)
-- [ ] `bulkApi.ts` — POST upload + GET sample
-
-**Backend ready:** ✅ `POST /bulk/upload`, `GET /bulk/sample`
-
----
-
-## Task 41 — Payment Gateway Integration
-
-**Priority:** Medium | **Depends on:** subscription backend (V3 migration)
-
-### Goal
-Integrate Razorpay (or Stripe) so tenants can pay online and subscriptions activate automatically on webhook receipt.
-
-### Backend Steps
-1. Add `gateway_order_id` to `tenant_subscriptions` via Flyway V4 migration.
-2. Create `PaymentGatewayService` interface with `createOrder()` and `verifyWebhook()`.
-3. Implement `RazorpayPaymentGatewayServiceImpl`.
-4. New endpoints:
-   - `POST /api/v1/tenants/{tenantId}/subscribe/initiate` → returns Razorpay `orderId`
-   - `POST /api/v1/payments/webhook` → verifies signature, activates subscription + marks PAID
-5. Store API keys via env vars: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`.
-
-### Frontend Steps
-1. In `TenantSubscriptionPage.tsx`, add "Pay Online" button using Razorpay checkout.js.
-2. On success, poll `GET /api/v1/tenants/{tenantId}/subscription` to confirm activation.
-
-### References
-- See `docs/12_PAYMENT_FLOW.md` for full sequence diagram.

@@ -14,4 +14,6 @@ public interface StudentService {
     StudentResponse getStudentById(UUID id);
 
     Page<StudentResponse> getStudents(Pageable pageable);
+
+    void softDeleteStudent(UUID id);
 }

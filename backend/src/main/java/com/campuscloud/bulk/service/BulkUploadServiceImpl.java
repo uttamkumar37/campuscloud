@@ -459,7 +459,7 @@ public class BulkUploadServiceImpl implements BulkUploadService {
         if (cell == null || cell.getCellType() == CellType.BLANK) {
             throw new BulkUploadValidationException(fieldName + " is required");
         }
-        if (DateUtil.isCellDateFormatted(cell)) {
+        if (cell.getCellType() == CellType.NUMERIC && DateUtil.isCellDateFormatted(cell)) {
             return cell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         }
 

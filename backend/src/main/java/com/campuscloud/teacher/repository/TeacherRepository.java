@@ -1,10 +1,13 @@
 package com.campuscloud.teacher.repository;
 
 import com.campuscloud.teacher.entity.Teacher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface TeacherRepository extends JpaRepository<Teacher, UUID> {
@@ -12,6 +15,10 @@ public interface TeacherRepository extends JpaRepository<Teacher, UUID> {
     boolean existsByEmployeeNo(String employeeNo);
 
     boolean existsByEmail(String email);
+
+    Optional<Teacher> findByIdAndDeletedAtIsNull(UUID id);
+
+    Page<Teacher> findAllByDeletedAtIsNull(Pageable pageable);
 
     long countByActiveTrue();
 

@@ -1,7 +1,7 @@
 # CampusCloud — Project Tracker
 
 
-> Last Updated: 2026-04-28 | Reflects actual codebase state
+> Last Updated: 2026-04-30 | Reflects actual codebase state
 
 ---
 
@@ -9,9 +9,9 @@
 
 | Status | Count |
 |--------|-------|
-| ✅ Completed | 31 |
-| ⚠️ In Progress | 4 |
-| ❌ Pending | 6 |
+| ✅ Completed | 41 |
+| ⚠️ In Progress | 0 |
+| ❌ Pending | 1 |
 
 ---
 
@@ -49,7 +49,21 @@
 | 21 | Parent portal (linked children) | Parent | `parent_students` table, `GET /me/children` |
 | 22 | Dashboard (tenant summary + super admin summary) | Dashboard | KPI cards, branding |
 | 23 | Bulk upload (Excel via Apache POI) | Bulk | Students, Teachers, Classes, Sections sheets |
-| 24 | Unit tests (User, Exam, Fees services) | Testing | JUnit 5 + Mockito, ~33 tests |
+| 24 | Unit tests (User, Exam, Fees services) | Testing | JUnit 5 + Mockito, 30 tests |
+| 34 | Attendance UI | Frontend/Attendance | Date picker, class/section selector, bulk mark, report view |
+| 35 | Fees UI | Frontend/Fees | Assignment form, payment form, status badge, payment history |
+| 36 | Marks / Exams UI | Frontend/Marks | Exam form, results entry, results table per exam |
+| 37 | Homework UI | Frontend/Homework | Homework list, create form, due-date highlighting |
+| 38 | Timetable UI | Frontend/Timetable | Weekly grid view, slot create form, class/section filter |
+| 39 | Parent Portal UI | Frontend/Parent | My children list, per-child fee/attendance/results view |
+| 40 | Profile pages (all roles) | Frontend/Profile | View + edit own profile for every role |
+| 41 | Ownership-aware authorization | Backend/Security | `OwnershipChecker` bean; role+ownership `@PreAuthorize` on Fees, Attendance, Exam results |
+| 42 | Audit logging | Backend | `Auditable` MappedSuperclass, `JwtAuditorAware`, `@EnableJpaAuditing`; 10 entities updated; DDL columns added |
+| 43 | Soft delete | Backend | `deleted_at` on User/Student/Teacher; soft-delete-aware repos; `DELETE /students/{id}`, `DELETE /teachers/{id}` |
+| 44 | Integration tests (Testcontainers) | Testing | Failsafe plugin; `IntegrationTestBase`; 17 IT tests across tenant provisioning, student CRUD, fee payment status |
+| 45 | Frontend UX hardening | Frontend (all) | `ConfirmDialog` component; delete student/teacher with confirm; 401 auto-redirect to correct login page |
+| 46 | Bulk upload UI | Frontend/Bulk | File picker (.xlsx filter), drag-and-drop, upload progress bar, result card with per-row errors, sample download, instructions modal |
+| 47 | Documentation update | Docs/Postman | 07_API_REFERENCE.md (8 new sections); 08_API.md (13 fixes, v1.1); Postman (16 folders, 49 endpoints, legacy folder removed) |
 
 ### Frontend
 
@@ -69,9 +83,7 @@
 
 ## ⚠️ In Progress
 
-| # | Task | Module | Status |
-|---|------|--------|--------|
-| 32 | Frontend UX hardening | Frontend (all) | Error boundaries, loading states, form validation messages partially done |
+_None_
 
 ---
 
@@ -79,12 +91,7 @@
 
 | # | Task | Module | Priority | Description |
 |---|------|--------|----------|-------------|
-| 38 | Attendance, Fees, Marks UI | Frontend | High | Hub pages are stubs — need full form + list implementation |
-| 39 | Homework + Timetable UI | Frontend | High | Read-only views needed for all roles |
-| 40 | Parent portal UI | Frontend | Medium | `MyChildrenPage` is a stub |
-| 41 | Ownership-aware authorization | Backend/Security | High | Students/parents should only access their own data |
-| 42 | Audit logging (created_by, updated_by) | Backend | Medium | JPA auditing with `@CreatedBy`, `@LastModifiedBy` |
-| 43 | Integration tests (Testcontainers) | Testing | Medium | `@SpringBootTest` + real PostgreSQL container |
+| 48 | Payment gateway integration | Backend+Frontend | Medium | Razorpay/Stripe: `POST /subscribe/initiate`, webhook handler, frontend checkout |
 
 ---
 
@@ -96,16 +103,20 @@
 | Tenant Management | ✅ Complete | ✅ Complete |
 | User Management | ✅ Complete | ✅ Complete |
 | Students | ✅ Complete | ✅ Complete |
-| Teachers | ✅ Complete | ⚠️ In Progress |
-| Academic (Classes/Subjects/Sections) | ✅ Complete | ⚠️ In Progress |
-| Attendance | ✅ Complete | ❌ Pending |
-| Fees | ✅ Complete | ❌ Pending |
-| Exams / Marks | ✅ Complete | ❌ Pending |
-| Homework | ✅ Complete | ❌ Pending |
-| Timetable | ✅ Complete | ❌ Pending |
-| Parent Portal | ✅ Complete | ❌ Pending |
+| Teachers | ✅ Complete | ✅ Complete |
+| Academic (Classes/Subjects/Sections) | ✅ Complete | ✅ Complete |
+| Attendance | ✅ Complete | ✅ Complete |
+| Fees | ✅ Complete | ✅ Complete |
+| Exams / Marks | ✅ Complete | ✅ Complete |
+| Homework | ✅ Complete | ✅ Complete |
+| Timetable | ✅ Complete | ✅ Complete |
+| Parent Portal | ✅ Complete | ✅ Complete |
 | Dashboard | ✅ Complete | ✅ Complete |
-| Bulk Upload | ✅ Complete | ❌ Pending |
+| Bulk Upload | ✅ Complete | ✅ Complete |
+| Ownership Authorization | ✅ Complete | ✅ Complete |
+| Audit Logging | ✅ Complete | N/A |
+| Soft Delete | ✅ Complete | N/A |
+| Integration Tests | ✅ Complete | N/A |
 | Subscription Plans | ✅ Complete | ✅ Complete |
 | Tenant Subscriptions | ✅ Complete | ✅ Complete |
 | Platform Payments | ✅ Complete | ✅ Complete |

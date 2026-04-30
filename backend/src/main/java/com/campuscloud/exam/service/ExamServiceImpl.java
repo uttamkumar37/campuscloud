@@ -13,12 +13,14 @@ import com.campuscloud.exam.repository.ExamRepository;
 import com.campuscloud.exam.repository.ExamResultRepository;
 import com.campuscloud.student.repository.StudentRepository;
 import com.campuscloud.tenant.service.TenantContext;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -117,14 +119,20 @@ public class ExamServiceImpl implements ExamService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ExamResultResponse> getExamResults(UUID examId) {
+    public List<ExamResultResponse> getExamResults(UUID examId, @Nullable Set<UUID> allowedStudentIds) {
         validateTenantContext();
 
         if (!examRepository.existsById(examId)) {
             throw new IllegalArgumentException("Exam not found: " + examId);
         }
 
-        return examResultRepository.findAllByExamId(examId).stream().map(this::mapResult).toList();
+        List<ExamResult> results = examResultRepository.findAllByExamId(examId);
+        if (allowedStudentIds != null) {
+            results = results.stream()
+                    .filter(r -> allowedStudentIds.contains(r.getStudentId()))
+                    .toList();
+        }
+        return results.stream().map(this::mapResult).toList();
     }
 
     private void validateTenantContext() {

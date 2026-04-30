@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -51,7 +52,7 @@ public class StudentServiceImpl implements StudentService {
     @Transactional(readOnly = true)
     public StudentResponse getStudentById(UUID id) {
         validateTenantContext();
-        Student student = studentRepository.findById(id)
+        Student student = studentRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new IllegalArgumentException("Student not found: " + id));
         return map(student);
     }
@@ -60,7 +61,19 @@ public class StudentServiceImpl implements StudentService {
     @Transactional(readOnly = true)
     public Page<StudentResponse> getStudents(Pageable pageable) {
         validateTenantContext();
-        return studentRepository.findAll(pageable).map(this::map);
+        return studentRepository.findAllByDeletedAtIsNull(pageable).map(this::map);
+    }
+
+    @Override
+    @Transactional
+    public void softDeleteStudent(UUID id) {
+        validateTenantContext();
+        Student student = studentRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(() -> new IllegalArgumentException("Student not found: " + id));
+        student.setDeletedAt(Instant.now());
+        student.setActive(false);
+        studentRepository.save(student);
+        log.info("Student soft-deleted: id={}, tenant={}", id, TenantContext.getTenant());
     }
 
     private String normalizeNullable(String value) {

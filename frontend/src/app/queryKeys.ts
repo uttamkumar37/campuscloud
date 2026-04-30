@@ -10,4 +10,11 @@ export const queryKeys = {
   subscriptionPlans: ['subscription', 'plans'] as const,
   tenantSubscription: (tenantId: string) => ['subscription', 'tenant', tenantId] as const,
   tenantPayments: (tenantId: string) => ['payments', 'tenant', tenantId] as const,
+  attendanceByDate: (date: string) => ['attendance', 'date', date] as const,
+  feeAssignments: (studentId: string) => ['fees', 'assignments', studentId] as const,
+  examsByClass: (classId: string) => ['exams', 'class', classId] as const,
+  examResults: (examId: string) => ['exams', 'results', examId] as const,
+  homeworkByClass: (classId: string) => ['homework', 'class', classId] as const,
+  timetable: (classId: string, sectionId: string) => ['timetable', classId, sectionId] as const,
+  parentChildren: ['parent', 'children'] as const,
 } as const

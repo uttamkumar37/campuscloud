@@ -1,24 +1,23 @@
 package com.campuscloud.exam.entity;
 
+import com.campuscloud.common.audit.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.UUID;
 
 @Getter
 @Setter
 @Entity
 @Table(name = "exam_results")
-public class ExamResult {
+public class ExamResult extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -42,11 +41,4 @@ public class ExamResult {
     @Column(name = "published", nullable = false)
     private boolean published = false;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @PrePersist
-    void onCreate() {
-        this.createdAt = Instant.now();
-    }
 }

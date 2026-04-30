@@ -1,5 +1,6 @@
 package com.campuscloud.attendance.entity;
 
+import com.campuscloud.common.audit.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,12 +8,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
 
@@ -20,7 +19,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "attendance_records")
-public class AttendanceRecord {
+public class AttendanceRecord extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -48,11 +47,4 @@ public class AttendanceRecord {
     @Column(name = "marked_by_user_id", nullable = false)
     private UUID markedByUserId;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @PrePersist
-    void onCreate() {
-        this.createdAt = Instant.now();
-    }
 }

@@ -1,6 +1,8 @@
 package com.campuscloud.exam.controller;
 
+import com.campuscloud.auth.security.CampusUserDetails;
 import com.campuscloud.common.api.ApiResponse;
+import com.campuscloud.common.security.OwnershipChecker;
 import com.campuscloud.exam.dto.ExamCreateRequest;
 import com.campuscloud.exam.dto.ExamResponse;
 import com.campuscloud.exam.dto.ExamResultCreateRequest;
@@ -13,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -30,6 +34,7 @@ import java.util.UUID;
 public class ExamController {
 
     private final ExamService examService;
+    private final OwnershipChecker ownershipChecker;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'SCHOOL_ADMIN', 'TEACHER')")
@@ -70,8 +75,13 @@ public class ExamController {
             @Parameter(name = "X-Tenant-ID", description = "Tenant schema identifier", required = true),
             @Parameter(name = "Authorization", description = "Bearer JWT token", required = true)
     })
-    public ResponseEntity<ApiResponse<List<ExamResultResponse>>> getExamResults(@PathVariable UUID examId) {
-        List<ExamResultResponse> response = examService.getExamResults(examId);
+    public ResponseEntity<ApiResponse<List<ExamResultResponse>>> getExamResults(
+            @PathVariable UUID examId,
+            @AuthenticationPrincipal CampusUserDetails caller
+    ) {
+        Set<UUID> allowed = ownershipChecker.resolveAllowedStudentIds(caller).orElse(null);
+        List<ExamResultResponse> response = examService.getExamResults(examId, allowed);
         return ResponseEntity.ok(ApiResponse.success("Exam results fetched successfully", response));
     }
 }
+

@@ -8,13 +8,16 @@ import com.campuscloud.attendance.entity.AttendanceRecord;
 import com.campuscloud.attendance.repository.AttendanceRecordRepository;
 import com.campuscloud.student.repository.StudentRepository;
 import com.campuscloud.tenant.service.TenantContext;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Slf4j
@@ -62,18 +65,27 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     @Transactional(readOnly = true)
-    public AttendanceResponse getAttendanceById(UUID attendanceId) {
+    public AttendanceResponse getAttendanceById(UUID attendanceId, @Nullable Set<UUID> allowedStudentIds) {
         validateTenantContext();
         AttendanceRecord record = attendanceRecordRepository.findById(attendanceId)
                 .orElseThrow(() -> new IllegalArgumentException("Attendance record not found: " + attendanceId));
+        if (allowedStudentIds != null && !allowedStudentIds.contains(record.getStudentId())) {
+            throw new AccessDeniedException("Access denied to attendance record: " + attendanceId);
+        }
         return map(record);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AttendanceResponse> getAttendanceByDate(LocalDate date) {
+    public List<AttendanceResponse> getAttendanceByDate(LocalDate date, @Nullable Set<UUID> allowedStudentIds) {
         validateTenantContext();
-        return attendanceRecordRepository.findAllByAttendanceDate(date).stream().map(this::map).toList();
+        List<AttendanceRecord> records = attendanceRecordRepository.findAllByAttendanceDate(date);
+        if (allowedStudentIds != null) {
+            records = records.stream()
+                    .filter(r -> allowedStudentIds.contains(r.getStudentId()))
+                    .toList();
+        }
+        return records.stream().map(this::map).toList();
     }
 
     private void validateTenantContext() {

@@ -1,5 +1,6 @@
 package com.campuscloud.user.entity;
 
+import com.campuscloud.common.audit.Auditable;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,7 +8,6 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @Setter
 @Entity
 @Table(name = "users")
-public class UserAccount {
+public class UserAccount extends Auditable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -50,11 +50,7 @@ public class UserAccount {
     @Column(name = "active", nullable = false)
     private boolean active = true;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Instant createdAt;
+    @Column(name = "deleted_at")
+    private Instant deletedAt;
 
-    @PrePersist
-    void onCreate() {
-        this.createdAt = Instant.now();
-    }
 }

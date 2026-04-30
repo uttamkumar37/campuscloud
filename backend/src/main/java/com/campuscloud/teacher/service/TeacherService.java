@@ -14,4 +14,6 @@ public interface TeacherService {
     TeacherResponse getTeacherById(UUID id);
 
     Page<TeacherResponse> getTeachers(Pageable pageable);
+
+    void softDeleteTeacher(UUID id);
 }
