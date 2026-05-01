@@ -2,9 +2,18 @@ import { apiClient } from '../../../api/client'
 import { ENDPOINTS } from '../../../api/endpoints'
 import type { ApiResponse } from '../../../types/api'
 
-import type { Child } from '../types'
+import type { Child, LinkParentRequest } from '../types'
 
 export async function getMyChildren() {
   const { data } = await apiClient.get<ApiResponse<Child[]>>(ENDPOINTS.parent.myChildren)
   return data
+}
+
+export async function linkParent(payload: LinkParentRequest) {
+  const { data } = await apiClient.post<ApiResponse<null>>(ENDPOINTS.parent.links, payload)
+  return data
+}
+
+export async function unlinkParent(linkId: string) {
+  await apiClient.delete(ENDPOINTS.parent.linkById(linkId))
 }

@@ -1,8 +1,8 @@
-# CampusCloud
+# CloudCampus
 
 > Multi-tenant School Management SaaS Platform
 
-CampusCloud is a production-grade SaaS platform for managing K-12 schools. Each school (tenant) is fully isolated using PostgreSQL schema-per-tenant. The platform covers the complete school operations lifecycle: enrollment, academics, attendance, exams, fees, homework, and timetables.
+CloudCampus is a production-grade SaaS platform for managing K-12 schools. Each school (tenant) is fully isolated using PostgreSQL schema-per-tenant. The platform covers the complete school operations lifecycle: enrollment, academics, attendance, exams, fees, homework, and timetables.
 
 ---
 
@@ -24,14 +24,14 @@ CampusCloud is a production-grade SaaS platform for managing K-12 schools. Each 
 ## Quick Start
 
 ```bash
-git clone https://github.com/your-org/CampusCloud.git
-cd CampusCloud
+git clone https://github.com/your-org/CloudCampus.git
+cd CloudCampus
 
 # Set required env vars
 cat > .env << 'EOF'
-POSTGRES_DB=campuscloud
-POSTGRES_USER=campuscloud
-POSTGRES_PASSWORD=campuscloud_dev
+POSTGRES_DB=cloudcampus
+POSTGRES_USER=cloudcampus
+POSTGRES_PASSWORD=cloudcampus_dev
 JWT_SECRET=your-super-secret-jwt-key-change-in-production-min-32-chars
 BOOTSTRAP_ADMIN_PASSWORD=SuperAdmin123!
 EOF
@@ -68,9 +68,9 @@ Login with: **superadmin** / **SuperAdmin123!**
 ## Project Structure
 
 ```
-CampusCloud/
+CloudCampus/
 ├── backend/                     # Spring Boot application
-│   ├── src/main/java/com/campuscloud/
+│   ├── src/main/java/com/cloudcampus/
 │   │   ├── auth/                # JWT login endpoint
 │   │   ├── security/            # JWT filter, role guards
 │   │   ├── tenant/              # Tenant CRUD, schema provisioning
@@ -130,4 +130,4 @@ See [docs/SETUP.md](docs/SETUP.md) for development environment setup and [docs/A
 
 ## License
 
-Proprietary — CampusCloud Team
+Proprietary — CloudCampus Team

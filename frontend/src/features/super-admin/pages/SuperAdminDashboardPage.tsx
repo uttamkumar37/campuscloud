@@ -15,7 +15,7 @@ export function SuperAdminDashboardPage() {
       cell: (tenant) => (
         <div>
           <p className="font-semibold text-slate-900">{tenant.schoolName}</p>
-          <p className="text-xs text-slate-500">{tenant.tenantId}</p>
+          <p className="text-xs text-slate-500">/{tenant.slug}</p>
         </div>
       ),
     },

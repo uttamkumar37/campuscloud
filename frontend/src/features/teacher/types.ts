@@ -18,3 +18,10 @@ export interface CreateTeacherRequest {
   phone: string | null
   hireDate: string
 }
+
+export interface UpdateTeacherRequest {
+  firstName?: string
+  lastName?: string
+  email?: string
+  phone?: string | null
+}

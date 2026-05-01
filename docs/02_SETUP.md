@@ -1,9 +1,9 @@
-# CampusCloud — Setup Guide
+# CloudCampus — Setup Guide
 
 
 > Version: 1.0 | Last Updated: 2026-04-28
 
-This guide walks through every option for running CampusCloud locally: Docker Compose (recommended), manual local setup, and first-time initialization.
+This guide walks through every option for running CloudCampus locally: Docker Compose (recommended), manual local setup, and first-time initialization.
 
 ---
 
@@ -35,8 +35,8 @@ This guide walks through every option for running CampusCloud locally: Docker Co
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/CampusCloud.git
-cd CampusCloud
+git clone https://github.com/your-org/CloudCampus.git
+cd CloudCampus
 ```
 
 ---
@@ -51,9 +51,9 @@ The fastest way to run the full stack. Requires Docker Desktop running.
 cp .env.example .env   # if .env.example exists
 # OR create manually:
 cat > .env << 'EOF'
-POSTGRES_DB=campuscloud
-POSTGRES_USER=campuscloud
-POSTGRES_PASSWORD=campuscloud_dev
+POSTGRES_DB=cloudcampus
+POSTGRES_USER=cloudcampus
+POSTGRES_PASSWORD=cloudcampus_dev
 
 JWT_SECRET=your-super-secret-jwt-key-change-in-production-min-32-chars
 JWT_ACCESS_TOKEN_EXPIRATION_MS=3600000
@@ -79,7 +79,7 @@ docker compose up --build
 | Frontend | http://localhost:5173 |
 | Backend API | http://localhost:8080/api/v1 |
 | Swagger UI | http://localhost:8080/swagger-ui.html |
-| PostgreSQL | localhost:5432 (user: campuscloud) |
+| PostgreSQL | localhost:5432 (user: cloudcampus) |
 
 ### Stop all services
 
@@ -106,9 +106,9 @@ Create database and user:
 psql postgres
 ```
 ```sql
-CREATE DATABASE campuscloud;
-CREATE USER campuscloud WITH PASSWORD 'campuscloud_dev';
-GRANT ALL PRIVILEGES ON DATABASE campuscloud TO campuscloud;
+CREATE DATABASE cloudcampus;
+CREATE USER cloudcampus WITH PASSWORD 'cloudcampus_dev';
+GRANT ALL PRIVILEGES ON DATABASE cloudcampus TO cloudcampus;
 \q
 ```
 
@@ -123,9 +123,9 @@ Create `application-local.yml` override (or set environment variables):
 # Option A: export environment variables
 export JWT_SECRET="your-super-secret-jwt-key-min-32-chars-here"
 export BOOTSTRAP_ADMIN_PASSWORD="SuperAdmin123!"
-export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/campuscloud"
-export SPRING_DATASOURCE_USERNAME="campuscloud"
-export SPRING_DATASOURCE_PASSWORD="campuscloud_dev"
+export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/cloudcampus"
+export SPRING_DATASOURCE_USERNAME="cloudcampus"
+export SPRING_DATASOURCE_PASSWORD="cloudcampus_dev"
 
 # Run the backend
 mvn spring-boot:run
@@ -137,9 +137,9 @@ mvn spring-boot:run \
   -Dspring-boot.run.jvmArguments="\
     -DJWT_SECRET=your-super-secret-jwt-key-min-32-chars \
     -DBOOTSTRAP_ADMIN_PASSWORD=SuperAdmin123! \
-    -DSPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/campuscloud \
-    -DSPRING_DATASOURCE_USERNAME=campuscloud \
-    -DSPRING_DATASOURCE_PASSWORD=campuscloud_dev"
+    -DSPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/cloudcampus \
+    -DSPRING_DATASOURCE_USERNAME=cloudcampus \
+    -DSPRING_DATASOURCE_PASSWORD=cloudcampus_dev"
 ```
 
 Flyway will automatically run migrations and create the `public.tenants` table on startup.
@@ -298,13 +298,13 @@ See [09_TESTING.md](./09_TESTING.md) for the complete testing guide.
 Flyway migration failed. Check:
 ```bash
 # Verify DB connection
-psql -U campuscloud -d campuscloud -c "\dt public.*"
+psql -U cloudcampus -d cloudcampus -c "\dt public.*"
 
 # Check Flyway migration status
 cd backend && mvn flyway:info \
-  -Dflyway.url=jdbc:postgresql://localhost:5432/campuscloud \
-  -Dflyway.user=campuscloud \
-  -Dflyway.password=campuscloud_dev
+  -Dflyway.url=jdbc:postgresql://localhost:5432/cloudcampus \
+  -Dflyway.user=cloudcampus \
+  -Dflyway.password=cloudcampus_dev
 ```
 
 ### JWT_SECRET validation error on startup

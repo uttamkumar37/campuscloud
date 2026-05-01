@@ -22,3 +22,10 @@ export interface CreateStudentRequest {
   email: string | null
   phone: string | null
 }
+
+export interface UpdateStudentRequest {
+  firstName?: string
+  lastName?: string
+  email?: string | null
+  phone?: string | null
+}

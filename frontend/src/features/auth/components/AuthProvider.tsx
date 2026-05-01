@@ -1,32 +1,33 @@
 import type { PropsWithChildren } from 'react'
 import { createContext, useMemo, useState } from 'react'
 
+import { apiClient } from '../../../api/client'
+import { ENDPOINTS } from '../../../api/endpoints'
 import { storage } from '../../../utils/storage'
 import type { LoginResponse, UserRole } from '../types'
 
 interface AuthContextValue {
-  accessToken: string | null
-  tenantId: string | null
+  tenantSlug: string | null
+  schoolName: string | null
   username: string | null
   role: UserRole | null
   userId: string | null
   isAuthenticated: boolean
   isSuperAdmin: boolean
-  setAuthSession: (response: LoginResponse, tenantId?: string | null) => void
+  setAuthSession: (response: LoginResponse) => void
   logout: () => void
 }
 
 export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [accessToken, setAccessToken] = useState<string | null>(storage.getAccessToken())
-  const [tenantId, setTenantId] = useState<string | null>(storage.getTenantId())
+  const [tenantSlug, setTenantSlug] = useState<string | null>(storage.getTenantSlug())
+  const [schoolName, setSchoolName] = useState<string | null>(storage.getSchoolName())
   const [username, setUsername] = useState<string | null>(storage.getUsername())
   const [role, setRole] = useState<UserRole | null>(storage.getRole() as UserRole | null)
   const [userId, setUserId] = useState<string | null>(storage.getUserId())
 
-  const setAuthSession = (response: LoginResponse, nextTenantId?: string | null) => {
-    storage.setAccessToken(response.accessToken)
+  const setAuthSession = (response: LoginResponse) => {
     storage.setUsername(response.username)
     storage.setRole(response.role)
     if (response.userId) {
@@ -35,23 +36,31 @@ export function AuthProvider({ children }: PropsWithChildren) {
       storage.removeUserId()
     }
 
-    if (nextTenantId) {
-      storage.setTenantId(nextTenantId)
+    if (response.tenantSlug) {
+      storage.setTenantSlug(response.tenantSlug)
     } else {
-      storage.removeTenantId()
+      storage.removeTenantSlug()
     }
 
-    setAccessToken(response.accessToken)
-    setTenantId(nextTenantId ?? null)
+    if (response.schoolName) {
+      storage.setSchoolName(response.schoolName)
+    } else {
+      storage.removeSchoolName()
+    }
+
+    setTenantSlug(response.tenantSlug ?? null)
+    setSchoolName(response.schoolName ?? null)
     setUsername(response.username)
     setRole(response.role)
     setUserId(response.userId ?? null)
   }
 
   const logout = () => {
+    // Ask the backend to expire the HttpOnly cookie
+    apiClient.post(ENDPOINTS.auth.logout).catch(() => {/* best-effort */})
     storage.clearAuth()
-    setAccessToken(null)
-    setTenantId(null)
+    setTenantSlug(null)
+    setSchoolName(null)
     setUsername(null)
     setRole(null)
     setUserId(null)
@@ -59,17 +68,20 @@ export function AuthProvider({ children }: PropsWithChildren) {
 
   const value = useMemo(
     () => ({
-      accessToken,
-      tenantId,
+      tenantSlug,
+      schoolName,
       username,
       role,
       userId,
-      isAuthenticated: Boolean(accessToken && role),
+      // isAuthenticated is derived from non-sensitive localStorage values.
+      // If the HttpOnly cookie is expired the first protected API call will
+      // return 401 and the response interceptor will call clearAuth().
+      isAuthenticated: Boolean(username && role),
       isSuperAdmin: role === 'SUPER_ADMIN',
       setAuthSession,
       logout,
     }),
-    [accessToken, role, tenantId, userId, username],
+    [role, schoolName, tenantSlug, userId, username],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

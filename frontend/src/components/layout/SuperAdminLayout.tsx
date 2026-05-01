@@ -15,7 +15,7 @@ export function SuperAdminLayout() {
     <div className="min-h-screen bg-[#f4f7fb]">
       <div className="mx-auto grid min-h-screen max-w-[1500px] grid-cols-1 xl:grid-cols-[280px_1fr]">
         <aside className="border-b border-slate-200 bg-slate-950 px-6 py-8 text-white xl:border-b-0 xl:border-r">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">CampusCloud</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">CloudCampus</p>
           <h1 className="mt-3 text-2xl font-semibold">Super Admin Portal</h1>
           <p className="mt-2 text-sm text-slate-300">Platform-wide tenant governance and growth monitoring.</p>
 

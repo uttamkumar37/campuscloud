@@ -34,7 +34,7 @@ export function TenantsPage() {
           )}
           <div>
             <p className="font-semibold text-slate-900">{tenant.schoolName}</p>
-            <p className="text-xs text-slate-500">{tenant.tenantId}</p>
+            <p className="text-xs text-slate-500">/{tenant.slug}</p>
           </div>
         </div>
       ),
@@ -81,7 +81,7 @@ export function TenantsPage() {
 
       showToast({
         title: 'Tenant created',
-        description: `${response.data.schoolName} is now provisioned in CampusCloud.`,
+        description: `${response.data.schoolName} is now provisioned in CloudCampus.`,
         tone: 'success',
       })
       return true
@@ -101,7 +101,7 @@ export function TenantsPage() {
     <section className="space-y-8">
       <PageHeader
         title="Tenant Management"
-        subtitle="Provision new schools, set branding defaults, and monitor the tenant list."
+        subtitle="Provision new schools, define slugs, set branding defaults, and monitor the tenant list."
       />
 
       <TenantForm onSubmit={handleCreateTenant} isSubmitting={createTenantMutation.isPending} />
@@ -115,7 +115,7 @@ export function TenantsPage() {
       <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_22px_50px_-32px_rgba(15,23,42,0.35)]">
         <div className="mb-5">
           <h2 className="text-lg font-semibold text-slate-950">Tenant List</h2>
-          <p className="mt-1 text-sm text-slate-500">Every onboarded school in the public tenant registry.</p>
+          <p className="mt-1 text-sm text-slate-500">Every onboarded school in the public CloudCampus registry.</p>
         </div>
 
         {tenantsQuery.isError ? (

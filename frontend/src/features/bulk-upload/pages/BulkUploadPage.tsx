@@ -84,7 +84,7 @@ export function BulkUploadPage() {
       const url = window.URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = 'campuscloud-bulk-upload-sample.xlsx'
+      link.download = 'cloudcampus-bulk-upload-sample.xlsx'
       link.click()
       window.URL.revokeObjectURL(url)
     } catch {

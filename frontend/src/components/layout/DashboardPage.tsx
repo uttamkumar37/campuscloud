@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 
 import { PageHeader } from '../ui/PageHeader'
 import { useAuth } from '../../features/auth/hooks/useAuth'
+import { sanitizeCssColor } from '../../utils/sanitize'
 import { ActivityFeed } from '../../features/dashboard/components/ActivityFeed'
 import { DashboardChartCard } from '../../features/dashboard/components/DashboardChartCard'
 import { DashboardKpiCard } from '../../features/dashboard/components/DashboardKpiCard'
@@ -14,6 +15,7 @@ export function DashboardPage() {
   const summaryQuery = useTenantDashboardSummary()
   const summary = summaryQuery.data?.data
   const { role, username } = useAuth()
+  const primaryColor = sanitizeCssColor(summary?.branding?.primaryColor)
 
   if (summaryQuery.isLoading) {
     return (
@@ -54,7 +56,7 @@ export function DashboardPage() {
           <DashboardKpiCard
             title="School Attendance"
             value={`${summary.attendancePercentage.toFixed(1)}%`}
-            accent={summary.branding.primaryColor}
+            accent={primaryColor}
             hint="School-wide attendance last 7 days"
           />
           <DashboardKpiCard
@@ -75,7 +77,7 @@ export function DashboardPage() {
           title="Attendance Trend"
           subtitle="Daily attendance quality over the last 7 days"
         >
-          <LineTrendChart data={summary.attendanceTrend} strokeColor={summary.branding.primaryColor} />
+          <LineTrendChart data={summary.attendanceTrend} strokeColor={primaryColor} />
         </DashboardChartCard>
 
         <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_22px_50px_-32px_rgba(15,23,42,0.35)]">
@@ -83,7 +85,7 @@ export function DashboardPage() {
           <p className="text-sm text-slate-500 mb-5">Jump into your most common teaching tasks.</p>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
             {[
-              { to: '/attendance', label: 'Mark Attendance', desc: 'Track today\'s class', accent: summary.branding.primaryColor },
+              { to: '/attendance', label: 'Mark Attendance', desc: 'Track today\'s class', accent: primaryColor },
               { to: '/homework', label: 'Homework', desc: 'Assign & review', accent: '#2563eb' },
               { to: '/marks', label: 'Enter Marks', desc: 'Exam results', accent: '#7c3aed' },
               { to: '/timetable', label: 'Timetable', desc: 'Your weekly schedule', accent: '#0f172a' },
@@ -118,7 +120,7 @@ export function DashboardPage() {
               key={item.to}
               to={item.to}
               className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md"
-              style={{ borderTopColor: summary.branding.primaryColor, borderTopWidth: 3 }}
+              style={{ borderTopColor: primaryColor, borderTopWidth: 3 }}
             >
               <p className="text-lg font-semibold text-slate-900">{item.label}</p>
               <p className="mt-1 text-sm text-slate-500">{item.desc}</p>
@@ -149,7 +151,7 @@ export function DashboardPage() {
               key={item.to}
               to={item.to}
               className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md"
-              style={{ borderTopColor: summary.branding.primaryColor, borderTopWidth: 3 }}
+              style={{ borderTopColor: primaryColor, borderTopWidth: 3 }}
             >
               <p className="text-lg font-semibold text-slate-900">{item.label}</p>
               <p className="mt-1 text-sm text-slate-500">{item.desc}</p>
@@ -171,7 +173,7 @@ export function DashboardPage() {
         <DashboardKpiCard
           title="Total Students"
           value={summary.totalStudents.toLocaleString()}
-          accent={summary.branding.primaryColor}
+          accent={primaryColor}
           hint="Active learners across the tenant"
         />
         <DashboardKpiCard
@@ -199,14 +201,14 @@ export function DashboardPage() {
           title="Attendance Trend"
           subtitle="Daily attendance quality over the last 7 days"
         >
-          <LineTrendChart data={summary.attendanceTrend} strokeColor={summary.branding.primaryColor} />
+          <LineTrendChart data={summary.attendanceTrend} strokeColor={primaryColor} />
         </DashboardChartCard>
 
         <DashboardChartCard
           title="Monthly Fee Collection"
           subtitle="Collected payments in the last 6 months"
         >
-          <MonthlyBarChart data={summary.monthlyFeeCollection} barColor={summary.branding.primaryColor} />
+          <MonthlyBarChart data={summary.monthlyFeeCollection} barColor={primaryColor} />
         </DashboardChartCard>
       </div>
 
@@ -224,7 +226,7 @@ export function DashboardPage() {
                 title="Add Student"
                 subtitle="Create a new enrollment record"
                 to="/students"
-                accent={summary.branding.primaryColor}
+                accent={primaryColor}
               />
               <QuickActionCard
                 title="Add Teacher"
@@ -253,14 +255,14 @@ export function DashboardPage() {
               ) : (
                 <div
                   className="flex h-16 w-16 items-center justify-center rounded-2xl text-xl font-bold text-white"
-                  style={{ backgroundColor: summary.branding.primaryColor }}
+                  style={{ backgroundColor: primaryColor }}
                 >
                   {summary.branding.schoolName.slice(0, 2).toUpperCase()}
                 </div>
               )}
               <div className="space-y-1">
                 <p className="text-base font-semibold text-slate-900">{summary.branding.schoolName}</p>
-                <p className="text-sm text-slate-500">Theme color: {summary.branding.primaryColor}</p>
+                <p className="text-sm text-slate-500">Theme color: {primaryColor}</p>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {summary.quickInsights.map((insight) => (
                     <span

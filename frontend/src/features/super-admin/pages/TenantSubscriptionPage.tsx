@@ -6,23 +6,57 @@ import {
   useCancelSubscription,
   useTenantPayments,
   useRecordPayment,
+  useInitiatePayment,
 } from '../hooks/useSubscription'
 import { useSubscriptionPlans } from '../hooks/useSubscription'
-import type { RecordPaymentRequest } from '../types'
+import type { RecordPaymentRequest, InitiatePaymentResponse } from '../types'
+
+// Razorpay checkout.js is loaded via index.html — declare the global
+declare const Razorpay: new (options: Record<string, unknown>) => { open(): void }
+
+function openRazorpayCheckout(
+  data: InitiatePaymentResponse,
+  onSuccess: () => void,
+) {
+  const options = {
+    key: data.keyId,
+    amount: data.amountInPaise,
+    currency: data.currency,
+    order_id: data.orderId,
+    name: 'CloudCampus',
+    description: 'SaaS Subscription Payment',
+    handler: (_response: Record<string, string>) => {
+      // Razorpay calls this after a successful payment.
+      // The backend confirms the payment via the webhook (HMAC-verified).
+      onSuccess()
+    },
+    modal: {
+      ondismiss: () => {
+        // user closed modal without paying — no action needed
+      },
+    },
+    theme: { color: '#2563eb' },
+  }
+  const rzp = new Razorpay(options)
+  rzp.open()
+}
 
 export default function TenantSubscriptionPage() {
   const { tenantId } = useParams<{ tenantId: string }>()
   const id = tenantId ?? ''
 
-  const { data: subscription, isLoading: subLoading } = useTenantSubscription(id)
+  const { data: subscription, isLoading: subLoading, refetch: refetchSubscription } =
+    useTenantSubscription(id)
   const { data: plans } = useSubscriptionPlans()
-  const { data: payments, isLoading: payLoading } = useTenantPayments(id)
+  const { data: payments, isLoading: payLoading, refetch: refetchPayments } = useTenantPayments(id)
 
   const subscribeMutation = useSubscribeTenant(id)
   const cancelMutation = useCancelSubscription(id)
   const recordPaymentMutation = useRecordPayment()
+  const initiatePaymentMutation = useInitiatePayment(id)
 
   const [subscribeForm, setSubscribeForm] = useState({ planId: '', durationDays: 365 })
+  const [awaitingPaymentConfirmation, setAwaitingPaymentConfirmation] = useState(false)
   const [paymentForm, setPaymentForm] = useState<RecordPaymentRequest>({
     tenantId: id,
     subscriptionId: undefined,
@@ -43,6 +77,19 @@ export default function TenantSubscriptionPage() {
     recordPaymentMutation.mutate({ ...paymentForm, tenantId: id })
   }
 
+  function handlePayOnline() {
+    initiatePaymentMutation.mutate(undefined, {
+      onSuccess: (data) => {
+        if (!data) return
+        openRazorpayCheckout(data, () => {
+          // Razorpay modal closed after payment — wait for user to confirm
+          // so they can verify the bank deduction before refreshing status.
+          setAwaitingPaymentConfirmation(true)
+        })
+      },
+    })
+  }
+
   return (
     <div className="p-6 max-w-4xl mx-auto space-y-8">
       <h1 className="text-2xl font-bold">Subscription Management — {id}</h1>
@@ -56,15 +103,53 @@ export default function TenantSubscriptionPage() {
           <div className="space-y-1 text-sm">
             <p><span className="font-medium">Plan:</span> {subscription.plan.name}</p>
             <p><span className="font-medium">Status:</span> {subscription.status}</p>
-            <p><span className="font-medium">Payment:</span> {subscription.paymentStatus}</p>
+            <p>
+              <span className="font-medium">Payment:</span>{' '}
+              <span className={subscription.paymentStatus === 'PAID' ? 'text-green-600 font-semibold' : 'text-yellow-600'}>
+                {subscription.paymentStatus}
+              </span>
+            </p>
             <p><span className="font-medium">Period:</span> {subscription.startDate} → {subscription.endDate}</p>
-            <button
-              onClick={() => cancelMutation.mutate()}
-              disabled={cancelMutation.isPending}
-              className="mt-3 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 disabled:opacity-50 text-sm"
-            >
-              {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Subscription'}
-            </button>
+            <div className="flex gap-3 mt-3">
+              {subscription.paymentStatus !== 'PAID' && (
+                <button
+                  onClick={handlePayOnline}
+                  disabled={initiatePaymentMutation.isPending}
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 text-sm font-medium"
+                >
+                  {initiatePaymentMutation.isPending ? 'Opening checkout...' : '💳 Pay Online'}
+                </button>
+              )}
+              <button
+                onClick={() => cancelMutation.mutate()}
+                disabled={cancelMutation.isPending}
+                className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600 disabled:opacity-50 text-sm"
+              >
+                {cancelMutation.isPending ? 'Cancelling...' : 'Cancel Subscription'}
+              </button>
+            </div>
+            {awaitingPaymentConfirmation && (
+              <div className="mt-3">
+                <button
+                  onClick={() => {
+                    refetchSubscription()
+                    refetchPayments()
+                    setAwaitingPaymentConfirmation(false)
+                  }}
+                  className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm font-medium"
+                >
+                  ✓ Payment Done — Refresh Status
+                </button>
+                <p className="text-xs text-slate-500 mt-1">
+                  Click after your bank confirms the deduction.
+                </p>
+              </div>
+            )}
+            {initiatePaymentMutation.isError && (
+              <p className="text-red-500 text-xs mt-2">
+                Could not initiate payment. Check Razorpay configuration.
+              </p>
+            )}
           </div>
         ) : (
           <p className="text-gray-500 text-sm">No active subscription.</p>
@@ -106,7 +191,7 @@ export default function TenantSubscriptionPage() {
 
       {/* Record Payment */}
       <section className="border rounded p-4 bg-white shadow-sm">
-        <h2 className="text-lg font-semibold mb-3">Record Payment</h2>
+        <h2 className="text-lg font-semibold mb-3">Record Manual Payment</h2>
         <form onSubmit={handlePayment} className="grid grid-cols-2 gap-3">
           <input
             required

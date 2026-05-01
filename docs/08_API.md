@@ -1,4 +1,4 @@
-# CampusCloud — API Documentation
+# CloudCampus — API Documentation
 
 
 > Version: 1.1 | Last Updated: 2026-04-30 | Base URL: `http://localhost:8080/api/v1`

@@ -1,4 +1,4 @@
-# CampusCloud — Project Tracker
+# CloudCampus — Project Tracker
 
 
 > Last Updated: 2026-04-30 | Reflects actual codebase state
@@ -9,9 +9,9 @@
 
 | Status | Count |
 |--------|-------|
-| ✅ Completed | 41 |
+| ✅ Completed | 42 |
 | ⚠️ In Progress | 0 |
-| ❌ Pending | 1 |
+| ❌ Pending | 0 |
 
 ---
 
@@ -64,6 +64,7 @@
 | 45 | Frontend UX hardening | Frontend (all) | `ConfirmDialog` component; delete student/teacher with confirm; 401 auto-redirect to correct login page |
 | 46 | Bulk upload UI | Frontend/Bulk | File picker (.xlsx filter), drag-and-drop, upload progress bar, result card with per-row errors, sample download, instructions modal |
 | 47 | Documentation update | Docs/Postman | 07_API_REFERENCE.md (8 new sections); 08_API.md (13 fixes, v1.1); Postman (16 folders, 49 endpoints, legacy folder removed) |
+| 48 | Payment gateway integration (Razorpay) | Backend+Frontend | Flyway V4; `PaymentGatewayService`; `RazorpayPaymentGatewayServiceImpl`; `POST /subscribe/initiate`; `POST /payments/webhook` (HMAC-SHA256); "Pay Online" button + Razorpay checkout.js; `12_PAYMENT_FLOW.md` v2 |
 
 ### Frontend
 
@@ -89,9 +90,7 @@ _None_
 
 ## ❌ Pending
 
-| # | Task | Module | Priority | Description |
-|---|------|--------|----------|-------------|
-| 48 | Payment gateway integration | Backend+Frontend | Medium | Razorpay/Stripe: `POST /subscribe/initiate`, webhook handler, frontend checkout |
+_None — all planned tasks completed._
 
 ---
 
@@ -118,6 +117,7 @@ _None_
 | Soft Delete | ✅ Complete | N/A |
 | Integration Tests | ✅ Complete | N/A |
 | Subscription Plans | ✅ Complete | ✅ Complete |
+| Payment Gateway (Razorpay) | ✅ Complete | ✅ Complete |
 | Tenant Subscriptions | ✅ Complete | ✅ Complete |
 | Platform Payments | ✅ Complete | ✅ Complete |
 

@@ -1,13 +1,17 @@
-export const API_BASE_URL = 'http://localhost:8080/api/v1'
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8080/api/v1'
 
 export const ENDPOINTS = {
   auth: {
     login: '/auth/login',
+    logout: '/auth/logout',
     me: '/auth/me',
+    changePassword: '/auth/change-password',
   },
   dashboard: {
     tenantSummary: '/dashboard/tenant-summary',
     superAdminSummary: '/dashboard/super-admin-summary',
+    student: '/dashboard/student',
+    teacher: '/dashboard/teacher',
   },
   bulk: {
     upload: '/bulk/upload',
@@ -15,15 +19,18 @@ export const ENDPOINTS = {
   },
   tenants: {
     base: '/tenants',
+    searchSchools: '/tenants/schools/search',
   },
   users: {
     base: '/users',
   },
   students: {
     base: '/students',
+    byId: (id: string) => `/students/${id}`,
   },
   teachers: {
     base: '/teachers',
+    byId: (id: string) => `/teachers/${id}`,
   },
   academic: {
     base: '/academics',
@@ -54,6 +61,8 @@ export const ENDPOINTS = {
   },
   parent: {
     myChildren: '/parents/me/children',
+    links: '/parents/links',
+    linkById: (linkId: string) => `/parents/links/${linkId}`,
   },
   plans: {
     base: '/plans',
@@ -61,11 +70,13 @@ export const ENDPOINTS = {
   },
   subscriptions: {
     subscribe: (tenantId: string) => `/tenants/${tenantId}/subscribe`,
+    initiate: (tenantId: string) => `/tenants/${tenantId}/subscribe/initiate`,
     get: (tenantId: string) => `/tenants/${tenantId}/subscription`,
     cancel: (tenantId: string) => `/tenants/${tenantId}/subscription`,
   },
   payments: {
     base: '/payments',
     byTenant: (tenantId: string) => `/payments/tenant/${tenantId}`,
+    webhook: '/payments/webhook',
   },
 } as const

@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import { Button } from '../../../components/ui/Button'
@@ -8,7 +8,9 @@ import { DataTable, type DataTableColumn } from '../../../components/ui/DataTabl
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { FormInput } from '../../../components/ui/FormInput'
 import { PageHeader } from '../../../components/ui/PageHeader'
+import { SearchableSelect } from '../../../components/ui/SearchableSelect'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useSchoolDirectory } from '../../academic/hooks/useSchoolDirectory'
 import type { ApiResponse } from '../../../types/api'
 import { showToast } from '../../../utils/toast'
 import { useAuth } from '../../auth/hooks/useAuth'
@@ -35,18 +37,37 @@ const emptyPayForm: RecordPaymentRequest = {
 
 export function FeesHubPage() {
   const { userId } = useAuth()
-  const [lookupStudentId, setLookupStudentId] = useState('')
   const [searchId, setSearchId] = useState('')
   const [assignForm, setAssignForm] = useState<AssignFeeRequest>(emptyAssignForm)
   const [payForm, setPayForm] = useState<RecordPaymentRequest>(emptyPayForm)
 
+  const directory = useSchoolDirectory()
   const feeQuery = useFeeAssignments(searchId)
   const assignMutation = useAssignFee()
   const paymentMutation = useRecordPayment()
 
   const assignments = feeQuery.data?.data ?? []
+  const studentLabelById = useMemo(
+    () => Object.fromEntries(directory.students.map((student) => [student.id, `${student.firstName} ${student.lastName} (${student.admissionNo})`])),
+    [directory.students],
+  )
+  const feeAssignmentOptions = useMemo(
+    () => assignments.map((assignment) => ({ value: assignment.id, label: `${assignment.feeTitle} - ₹${assignment.amount.toLocaleString('en-IN')} - ${assignment.status.replace('_', ' ')}` })),
+    [assignments],
+  )
+
+  useEffect(() => {
+    if (payForm.feeAssignmentId && !assignments.some((assignment) => assignment.id === payForm.feeAssignmentId)) {
+      setPayForm((current) => ({ ...current, feeAssignmentId: '' }))
+    }
+  }, [assignments, payForm.feeAssignmentId])
 
   const columns: DataTableColumn<FeeAssignment>[] = [
+    {
+      key: 'studentId',
+      header: 'Student',
+      cell: (r) => <span className="font-medium text-slate-900">{studentLabelById[r.studentId] ?? 'Unknown student'}</span>,
+    },
     { key: 'feeTitle', header: 'Title', cell: (r) => r.feeTitle },
     {
       key: 'amount',
@@ -120,11 +141,13 @@ export function FeesHubPage() {
             <p className="mt-1 text-sm text-slate-500">Create a fee obligation for a student.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <FormInput
-              label="Student ID (UUID)"
-              value={assignForm.studentId}
-              onChange={(v) => setAssignForm((f) => ({ ...f, studentId: v }))}
-              placeholder="550e8400-…"
+            <SearchableSelect
+              label="Student"
+              selectedValue={assignForm.studentId}
+              onSelect={(value) => setAssignForm((current) => ({ ...current, studentId: value }))}
+              options={directory.studentOptions}
+              placeholder="Search by name or admission number"
+              emptyMessage="No student matched that search."
               required
             />
             <FormInput
@@ -151,7 +174,7 @@ export function FeesHubPage() {
             />
           </div>
           <div>
-            <Button type="submit" disabled={assignMutation.isPending}>
+            <Button type="submit" disabled={assignMutation.isPending || directory.isLoading}>
               {assignMutation.isPending ? 'Assigning…' : 'Assign Fee'}
             </Button>
           </div>
@@ -166,11 +189,15 @@ export function FeesHubPage() {
             <p className="mt-1 text-sm text-slate-500">Log a fee payment against an existing assignment.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <FormInput
-              label="Fee Assignment ID (UUID)"
-              value={payForm.feeAssignmentId}
-              onChange={(v) => setPayForm((f) => ({ ...f, feeAssignmentId: v }))}
-              placeholder="a1b2c3d4-…"
+            <SearchableSelect
+              label="Fee Assignment"
+              selectedValue={payForm.feeAssignmentId}
+              onSelect={(value) => setPayForm((current) => ({ ...current, feeAssignmentId: value }))}
+              options={feeAssignmentOptions}
+              placeholder={searchId ? 'Search fee assignment' : 'Select a student first'}
+              emptyMessage="No fee assignment matched that search."
+              helperText="Load a student's fee history first to choose the assignment."
+              disabled={!searchId}
               required
             />
             <FormInput
@@ -202,7 +229,7 @@ export function FeesHubPage() {
             />
           </div>
           <div>
-            <Button type="submit" disabled={paymentMutation.isPending}>
+            <Button type="submit" disabled={paymentMutation.isPending || directory.isLoading}>
               {paymentMutation.isPending ? 'Saving…' : 'Record Payment'}
             </Button>
           </div>
@@ -214,19 +241,17 @@ export function FeesHubPage() {
         <div className="flex flex-wrap items-end gap-4">
           <div className="flex-1">
             <h2 className="text-lg font-semibold text-slate-950">Fee History</h2>
-            <p className="mt-1 text-sm text-slate-500">Enter a student ID to view all fee assignments.</p>
+            <p className="mt-1 text-sm text-slate-500">Search a student to view all fee assignments.</p>
           </div>
-          <div className="flex items-center gap-2">
-            <input
-              type="text"
-              value={lookupStudentId}
-              onChange={(e) => setLookupStudentId(e.target.value)}
-              placeholder="Student UUID…"
-              className="rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 w-64"
+          <div className="w-full max-w-md">
+            <SearchableSelect
+              label="Student"
+              selectedValue={searchId}
+              onSelect={setSearchId}
+              options={directory.studentOptions}
+              placeholder="Search by name or admission number"
+              emptyMessage="No student matched that search."
             />
-            <Button variant="secondary" onClick={() => setSearchId(lookupStudentId)}>
-              Search
-            </Button>
           </div>
         </div>
 
@@ -242,7 +267,7 @@ export function FeesHubPage() {
             columns={columns}
             rows={assignments}
             rowKey={(r) => r.id}
-            emptyText={searchId ? 'No fee assignments for this student.' : 'Enter a student ID above to load fee history.'}
+            emptyText={searchId ? 'No fee assignments for this student.' : 'Search for a student above to load fee history.'}
           />
         )}
       </div>

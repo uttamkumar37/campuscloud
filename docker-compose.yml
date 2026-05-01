@@ -1,7 +1,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: campuscloud-postgres
+    container_name: cloudcampus-postgres
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${DB_USERNAME}
@@ -20,7 +20,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: campuscloud-backend
+    container_name: cloudcampus-backend
     depends_on:
       postgres:
         condition: service_healthy
@@ -41,7 +41,7 @@ services:
 
   frontend:
     image: node:22-alpine
-    container_name: campuscloud-frontend
+    container_name: cloudcampus-frontend
     working_dir: /app
     command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 5173"
     volumes:

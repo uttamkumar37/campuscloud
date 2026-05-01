@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-CampusCloud — Full Demo Seed Script
+CloudCampus — Full Demo Seed Script
 Provisions 4 school tenants with bulk student/teacher/class data + user accounts.
 """
 
@@ -91,6 +91,13 @@ TEACHER_DATA = [
     ("Deepak",  "Chauhan",   "Physics"),
 ]
 
+# 3 parents per school — linked to first 3 students
+PARENT_DATA = [
+    ("Ramesh",  "Sharma"),
+    ("Sujata",  "Patel"),
+    ("Vijay",   "Singh"),
+]
+
 # ── Helper ─────────────────────────────────────────────────────────────────────
 def api(method, path, token=None, tenant=None, json_body=None, files=None):
     headers = {}
@@ -177,7 +184,7 @@ def build_workbook(code, students, teachers, classes, sections):
 # ── Main seed ──────────────────────────────────────────────────────────────────
 def seed():
     print("\n" + "═"*60)
-    print("  CampusCloud — Demo Seed Script")
+    print("  CloudCampus — Demo Seed Script")
     print("═"*60)
 
     # ── 1. Super-admin login ───────────────────────────────────────
@@ -381,6 +388,61 @@ def seed():
             else:
                 log("  ⚠️", f"{sc['username']}: {u.get('message')}")
 
+        # 3h. Create parent user accounts and link to first 3 students
+        log("", "Creating parent user accounts …")
+        # Fetch student entity UUIDs (needed for parent–student link)
+        stu_resp = api("GET", "/students?size=20&page=0", token=adm_token, tenant=schema)
+        stu_entities = {}
+        if ok(stu_resp):
+            for s in stu_resp.get("data", {}).get("content", []):
+                stu_entities[s["admissionNo"]] = s["id"]
+
+        parent_creds = []
+        for i, (fn, ln) in enumerate(PARENT_DATA, 1):
+            username = f"{fn.lower()}.{ln.lower()}{i}"
+            password = f"{fn}@Parent{i}26!"
+            email    = f"parent{i}@{tid}.edu"
+            u = api("POST", "/users", token=adm_token, tenant=schema, json_body={
+                "fullName": f"{fn} {ln}",
+                "username": username,
+                "email":    email,
+                "password": password,
+                "role":     "PARENT",
+            })
+            parent_user_id = None
+            if ok(u):
+                parent_user_id = u["data"]["id"]
+                log("  ✅", f"{username}")
+            elif "already" in str(u.get("message", "")).lower() or \
+                 "duplicate" in str(u.get("message", "")).lower():
+                log("  ℹ️", f"{username} (exists)")
+            else:
+                log("  ⚠️", f"{username}: {u.get('message')}")
+
+            # Link parent to student i
+            student_adm_no = f"{code}-S{i:03d}"
+            student_id = stu_entities.get(student_adm_no)
+            if parent_user_id and student_id:
+                lk = api("POST", "/parents/links", token=adm_token, tenant=schema, json_body={
+                    "parentUserId": parent_user_id,
+                    "studentId":    student_id,
+                })
+                if ok(lk) or "already" in str(lk.get("message", "")).lower():
+                    log("  ✅", f"Linked {username} → {student_adm_no}")
+                else:
+                    log("  ⚠️", f"Link failed ({username}): {lk.get('message')}")
+            elif not student_id:
+                log("  ⚠️", f"Student entity {student_adm_no} not found — link skipped")
+
+            parent_creds.append({
+                "name":      f"{fn} {ln}",
+                "username":  username,
+                "password":  password,
+                "email":     email,
+                "linkedTo":  student_adm_no,
+                "role":      "PARENT",
+            })
+
         all_credentials.append({
             "tenantId":    tid,
             "schoolName":  tenant["schoolName"],
@@ -388,6 +450,7 @@ def seed():
             "admin":       adm,
             "teachers":    teacher_creds,
             "students":    student_creds[:5],
+            "parents":     parent_creds,
         })
 
     # ── 4. Print credentials summary ──────────────────────────────
@@ -420,9 +483,13 @@ def seed():
         print(f"  [STUDENTS — with login]")
         for sc in t["students"]:
             print(f"    {pad(sc['username'])} {pad(sc['password'])} adm:{sc['admNo']}")
+        print()
+        print(f"  [PARENTS — linked to students]")
+        for pc in t.get("parents", []):
+            print(f"    {pad(pc['username'])} {pad(pc['password'])} → {pc['linkedTo']}")
 
     # ── 5. Write JSON credentials file ────────────────────────────
-    out_path = "/tmp/campuscloud_credentials.json"
+    out_path = "/tmp/cloudcampus_credentials.json"
     with open(out_path, "w") as f:
         json.dump({
             "superAdmin": {"username": SA_USER, "password": SA_PASS},

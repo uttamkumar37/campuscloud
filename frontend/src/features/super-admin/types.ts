@@ -21,6 +21,7 @@ export interface User {
 export interface Tenant {
   id: string
   tenantId: string
+  slug: string
   schoolName: string
   schemaName: string
   logoUrl: string | null
@@ -31,6 +32,7 @@ export interface Tenant {
 
 export interface CreateTenantRequest {
   tenantId: string
+  slug?: string
   schoolName: string
   schemaName: string
   logoUrl: string
@@ -89,6 +91,15 @@ export interface TenantSubscription {
   status: 'ACTIVE' | 'EXPIRED' | 'CANCELLED' | 'TRIAL'
   paymentStatus: 'PENDING' | 'PAID' | 'FAILED' | 'REFUNDED'
   createdAt: string
+}
+
+export interface InitiatePaymentResponse {
+  orderId: string
+  amountInPaise: number
+  currency: string
+  keyId: string
+  subscriptionId: string
+  tenantId: string
 }
 
 export interface RecordPaymentRequest {

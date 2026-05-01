@@ -14,7 +14,7 @@ WORKDIR /app
 
 RUN groupadd -r spring && useradd -r -g spring spring
 
-COPY --from=build /workspace/target/digital-school-saas-0.0.1-SNAPSHOT.jar app.jar
+COPY --from=build /workspace/target/cloudcampus-backend-0.0.1-SNAPSHOT.jar app.jar
 
 EXPOSE 8080
 USER spring:spring

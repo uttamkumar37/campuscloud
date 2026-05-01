@@ -18,13 +18,13 @@ export function SuperAdminLoginPage() {
     setError(null)
 
     try {
-      const response = await loginMutation.mutateAsync({ username, password })
+      const response = await loginMutation.mutateAsync({ username, password, role: 'SUPER_ADMIN' })
       if (!response.success) {
         setError(response.message)
         return
       }
 
-      setAuthSession(response.data, null)
+      setAuthSession(response.data)
       navigate('/super-admin/dashboard', { replace: true })
     } catch {
       setError('Unable to sign in as super admin. Please verify your credentials.')
@@ -34,8 +34,8 @@ export function SuperAdminLoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-950 px-4 py-10 text-white">
       <div className="w-full max-w-md rounded-[34px] border border-white/10 bg-white/5 p-8 backdrop-blur">
-        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">CampusCloud</p>
-        <h1 className="mt-4 text-3xl font-semibold">Super Admin Login</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.35em] text-emerald-300">CloudCampus</p>
+        <h1 className="mt-4 text-3xl font-semibold">Platform Access</h1>
         <p className="mt-2 text-sm text-slate-300">
           Access platform controls, tenant provisioning, and cross-school visibility.
         </p>

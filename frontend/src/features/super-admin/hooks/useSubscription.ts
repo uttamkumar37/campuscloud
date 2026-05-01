@@ -65,3 +65,15 @@ export function useRecordPayment() {
     },
   })
 }
+
+export function useInitiatePayment(tenantId: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: () => subscriptionApi.initiatePayment(tenantId).then((r) => r.data.data),
+    onSuccess: () => {
+      // Refresh subscription after payment completes (polled by caller)
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantSubscription(tenantId) })
+      queryClient.invalidateQueries({ queryKey: queryKeys.tenantPayments(tenantId) })
+    },
+  })
+}

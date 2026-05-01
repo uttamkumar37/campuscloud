@@ -3,7 +3,7 @@ import { ENDPOINTS } from '../../../api/endpoints'
 import type { ApiResponse } from '../../../types/api'
 import type { PageResponse } from '../../../types/pagination'
 
-import type { CreateStudentRequest, Student } from '../types'
+import type { CreateStudentRequest, Student, UpdateStudentRequest } from '../types'
 
 interface GetStudentsParams {
   page?: number
@@ -25,6 +25,11 @@ export async function getStudents(params: GetStudentsParams = {}) {
 
 export async function createStudent(payload: CreateStudentRequest) {
   const { data } = await apiClient.post<ApiResponse<Student>>(ENDPOINTS.students.base, payload)
+  return data
+}
+
+export async function updateStudent(id: string, payload: UpdateStudentRequest) {
+  const { data } = await apiClient.patch<ApiResponse<Student>>(ENDPOINTS.students.byId(id), payload)
   return data
 }
 

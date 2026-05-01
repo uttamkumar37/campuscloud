@@ -9,18 +9,15 @@ export const apiClient = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // Token is sent via HttpOnly cookie; credentials must be included
+  withCredentials: true,
 })
 
 apiClient.interceptors.request.use((config) => {
-  const token = storage.getAccessToken()
-  const tenantId = storage.getTenantId()
+  const tenantSlug = storage.getTenantSlug()
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-
-  if (tenantId) {
-    config.headers['X-Tenant-ID'] = tenantId
+  if (tenantSlug) {
+    config.headers['X-Tenant-ID'] = tenantSlug
   }
 
   return config

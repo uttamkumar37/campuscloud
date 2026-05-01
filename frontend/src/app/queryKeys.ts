@@ -17,4 +17,6 @@ export const queryKeys = {
   homeworkByClass: (classId: string) => ['homework', 'class', classId] as const,
   timetable: (classId: string, sectionId: string) => ['timetable', classId, sectionId] as const,
   parentChildren: ['parent', 'children'] as const,
+  studentDashboard: ['dashboard', 'student'] as const,
+  teacherDashboard: ['dashboard', 'teacher'] as const,
 } as const

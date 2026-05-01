@@ -4,3 +4,8 @@ export interface Child {
   firstName: string
   lastName: string
 }
+
+export interface LinkParentRequest {
+  parentUserId: string
+  studentId: string
+}

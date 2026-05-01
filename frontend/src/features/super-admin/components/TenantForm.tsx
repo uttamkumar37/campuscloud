@@ -10,6 +10,7 @@ interface TenantFormProps {
 
 const initialState: CreateTenantRequest = {
   tenantId: '',
+  slug: '',
   schoolName: '',
   schemaName: '',
   logoUrl: '',
@@ -34,7 +35,7 @@ export function TenantForm({ onSubmit, isSubmitting }: TenantFormProps) {
       className="grid gap-4 rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_22px_50px_-32px_rgba(15,23,42,0.35)] lg:grid-cols-2"
     >
       <label className="space-y-2">
-        <span className="text-sm font-semibold text-slate-700">Tenant ID</span>
+        <span className="text-sm font-semibold text-slate-700">Internal Tenant Key</span>
         <input
           value={values.tenantId}
           onChange={(event) => setValues((current: CreateTenantRequest) => ({ ...current, tenantId: event.target.value }))}
@@ -51,6 +52,15 @@ export function TenantForm({ onSubmit, isSubmitting }: TenantFormProps) {
           className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
           placeholder="Sunrise Academy"
           required
+        />
+      </label>
+      <label className="space-y-2">
+        <span className="text-sm font-semibold text-slate-700">School Slug</span>
+        <input
+          value={values.slug ?? ''}
+          onChange={(event) => setValues((current: CreateTenantRequest) => ({ ...current, slug: event.target.value }))}
+          className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-sm outline-none focus:border-slate-900"
+          placeholder="sunrise-academy"
         />
       </label>
       <label className="space-y-2">

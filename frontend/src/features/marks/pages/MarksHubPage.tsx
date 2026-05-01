@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import { Button } from '../../../components/ui/Button'
@@ -7,8 +7,11 @@ import { Card } from '../../../components/ui/Card'
 import { DataTable, type DataTableColumn } from '../../../components/ui/DataTable'
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { FormInput } from '../../../components/ui/FormInput'
+import { FormSelect } from '../../../components/ui/FormSelect'
 import { PageHeader } from '../../../components/ui/PageHeader'
+import { SearchableSelect } from '../../../components/ui/SearchableSelect'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useSchoolDirectory } from '../../academic/hooks/useSchoolDirectory'
 import type { ApiResponse } from '../../../types/api'
 import { showToast } from '../../../utils/toast'
 
@@ -39,11 +42,10 @@ export function MarksHubPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('exams')
   const [examForm, setExamForm] = useState<CreateExamRequest>(emptyExamForm)
   const [resultForm, setResultForm] = useState<CreateExamResultRequest>(emptyResultForm)
-  const [classLookup, setClassLookup] = useState('')
   const [searchClassId, setSearchClassId] = useState('')
-  const [examLookup, setExamLookup] = useState('')
   const [searchExamId, setSearchExamId] = useState('')
 
+  const directory = useSchoolDirectory()
   const createExamMutation = useCreateExam()
   const createResultMutation = useCreateExamResult()
   const examsQuery = useExamsByClass(searchClassId)
@@ -51,16 +53,58 @@ export function MarksHubPage() {
 
   const exams = examsQuery.data?.data ?? []
   const results = resultsQuery.data?.data ?? []
+  const examSectionOptions = directory.getSectionsForClass(examForm.classId)
+  const lookupExamOptions = useMemo(
+    () => exams.map((exam) => ({ value: exam.id, label: `${exam.title} - ${exam.examDate}` })),
+    [exams],
+  )
+  const classLabelById = useMemo(
+    () => Object.fromEntries(directory.classes.map((item) => [item.id, item.name])),
+    [directory.classes],
+  )
+  const sectionLabelById = useMemo(
+    () => Object.fromEntries(directory.sections.map((item) => [item.id, `Section ${item.name}`])),
+    [directory.sections],
+  )
+  const subjectLabelById = useMemo(
+    () => Object.fromEntries(directory.subjects.map((item) => [item.id, item.name])),
+    [directory.subjects],
+  )
+  const studentLabelById = useMemo(
+    () => Object.fromEntries(directory.students.map((student) => [student.id, `${student.firstName} ${student.lastName} (${student.admissionNo})`])),
+    [directory.students],
+  )
+
+  useEffect(() => {
+    if (examForm.sectionId && !directory.isSectionValidForClass(examForm.classId, examForm.sectionId)) {
+      setExamForm((current) => ({ ...current, sectionId: '' }))
+    }
+  }, [directory, examForm.classId, examForm.sectionId])
+
+  useEffect(() => {
+    if (resultForm.examId && !exams.some((exam) => exam.id === resultForm.examId)) {
+      setResultForm((current) => ({ ...current, examId: '' }))
+    }
+    if (searchExamId && !exams.some((exam) => exam.id === searchExamId)) {
+      setSearchExamId('')
+    }
+  }, [exams, resultForm.examId, searchExamId])
 
   const examColumns: DataTableColumn<Exam>[] = [
     { key: 'title', header: 'Title', cell: (r) => <span className="font-medium text-slate-900">{r.title}</span> },
     { key: 'date', header: 'Date', cell: (r) => r.examDate },
+    { key: 'classId', header: 'Class', cell: (r) => classLabelById[r.classId] ?? 'Unknown class' },
+    { key: 'sectionId', header: 'Section', cell: (r) => sectionLabelById[r.sectionId] ?? 'Unknown section' },
+    { key: 'subjectId', header: 'Subject', cell: (r) => subjectLabelById[r.subjectId] ?? 'Unknown subject' },
     { key: 'maxMarks', header: 'Max Marks', cell: (r) => r.maxMarks },
-    { key: 'id', header: 'ID', cell: (r) => <span className="font-mono text-xs text-slate-500">{r.id}</span> },
   ]
 
   const resultColumns: DataTableColumn<ExamResult>[] = [
-    { key: 'studentId', header: 'Student ID', cell: (r) => <span className="font-mono text-xs">{r.studentId}</span> },
+    {
+      key: 'studentId',
+      header: 'Student',
+      cell: (r) => <span className="font-medium text-slate-900">{studentLabelById[r.studentId] ?? 'Unknown student'}</span>,
+    },
     { key: 'marks', header: 'Marks', cell: (r) => r.marksObtained },
     { key: 'grade', header: 'Grade', cell: (r) => r.grade ?? '—' },
     { key: 'remarks', header: 'Remarks', cell: (r) => r.remarks ?? '—' },
@@ -77,6 +121,12 @@ export function MarksHubPage() {
 
   const handleCreateExam = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    if (!directory.isSectionValidForClass(examForm.classId, examForm.sectionId)) {
+      showToast({ title: 'Invalid section', description: 'Select a section that belongs to the chosen class.', tone: 'error' })
+      return
+    }
+
     try {
       const res = await createExamMutation.mutateAsync({ ...examForm, maxMarks: Number(examForm.maxMarks) })
       if (!res.success) {
@@ -85,6 +135,7 @@ export function MarksHubPage() {
       }
       showToast({ title: 'Exam scheduled', description: res.data.title, tone: 'success' })
       setExamForm(emptyExamForm)
+      setSearchClassId((current) => current || res.data.classId)
     } catch (error) {
       const axiosError = error as AxiosError<ApiResponse<unknown>>
       showToast({ title: 'Exam not scheduled', description: axiosError.response?.data?.message ?? 'Error', tone: 'error' })
@@ -153,25 +204,30 @@ export function MarksHubPage() {
                   onChange={(v) => setExamForm((f) => ({ ...f, examDate: v }))}
                   required
                 />
-                <FormInput
-                  label="Class ID (UUID)"
+                <FormSelect
+                  label="Class"
                   value={examForm.classId}
                   onChange={(v) => setExamForm((f) => ({ ...f, classId: v }))}
-                  placeholder="550e8400-…"
+                  options={[{ value: '', label: 'Select a class' }, ...directory.classOptions]}
                   required
                 />
-                <FormInput
-                  label="Section ID (UUID)"
+                <FormSelect
+                  label="Section"
                   value={examForm.sectionId}
                   onChange={(v) => setExamForm((f) => ({ ...f, sectionId: v }))}
-                  placeholder="a1b2c3d4-…"
+                  options={[
+                    { value: '', label: examForm.classId ? 'Select a section' : 'Select a class first' },
+                    ...examSectionOptions,
+                  ]}
                   required
                 />
-                <FormInput
-                  label="Subject ID (UUID)"
-                  value={examForm.subjectId}
-                  onChange={(v) => setExamForm((f) => ({ ...f, subjectId: v }))}
-                  placeholder="e5f6a7b8-…"
+                <SearchableSelect
+                  label="Subject"
+                  selectedValue={examForm.subjectId}
+                  onSelect={(value) => setExamForm((current) => ({ ...current, subjectId: value }))}
+                  options={directory.subjectOptions}
+                  placeholder="Search subject"
+                  emptyMessage="No subject matched that search."
                   required
                 />
                 <FormInput
@@ -183,7 +239,7 @@ export function MarksHubPage() {
                 />
               </div>
               <div>
-                <Button type="submit" disabled={createExamMutation.isPending}>
+                <Button type="submit" disabled={createExamMutation.isPending || directory.isLoading}>
                   {createExamMutation.isPending ? 'Scheduling…' : 'Schedule Exam'}
                 </Button>
               </div>
@@ -196,23 +252,19 @@ export function MarksHubPage() {
               <div className="flex-1">
                 <h2 className="text-lg font-semibold text-slate-950">Exams by Class</h2>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={classLookup}
-                  onChange={(e) => setClassLookup(e.target.value)}
-                  placeholder="Class UUID…"
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 w-64"
+              <div className="w-full max-w-xs">
+                <FormSelect
+                  label="Class"
+                  value={searchClassId}
+                  onChange={setSearchClassId}
+                  options={[{ value: '', label: 'Select a class to browse exams' }, ...directory.classOptions]}
                 />
-                <Button variant="secondary" onClick={() => setSearchClassId(classLookup)}>
-                  Load
-                </Button>
               </div>
             </div>
             {examsQuery.isLoading ? <Skeleton className="h-24" /> : examsQuery.isError ? (
               <EmptyState title="Unable to load exams" description="Could not fetch exams for this class." />
             ) : (
-              <DataTable columns={examColumns} rows={exams} rowKey={(r) => r.id} emptyText={searchClassId ? 'No exams for this class.' : 'Enter a class ID to load exams.'} />
+              <DataTable columns={examColumns} rows={exams} rowKey={(r) => r.id} emptyText={searchClassId ? 'No exams for this class.' : 'Select a class to load exams.'} />
             )}
           </div>
         </>
@@ -228,18 +280,24 @@ export function MarksHubPage() {
                 <p className="mt-1 text-sm text-slate-500">Record a student's marks for a specific exam.</p>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
-                <FormInput
-                  label="Exam ID (UUID)"
-                  value={resultForm.examId}
-                  onChange={(v) => setResultForm((f) => ({ ...f, examId: v }))}
-                  placeholder="550e8400-…"
+                <SearchableSelect
+                  label="Exam"
+                  selectedValue={resultForm.examId}
+                  onSelect={(value) => setResultForm((current) => ({ ...current, examId: value }))}
+                  options={lookupExamOptions}
+                  placeholder={searchClassId ? 'Search exam title' : 'Select a class first'}
+                  emptyMessage="No exam matched that search."
+                  helperText="Choose a class above to load the exam list."
+                  disabled={!searchClassId}
                   required
                 />
-                <FormInput
-                  label="Student ID (UUID)"
-                  value={resultForm.studentId}
-                  onChange={(v) => setResultForm((f) => ({ ...f, studentId: v }))}
-                  placeholder="a1b2c3d4-…"
+                <SearchableSelect
+                  label="Student"
+                  selectedValue={resultForm.studentId}
+                  onSelect={(value) => setResultForm((current) => ({ ...current, studentId: value }))}
+                  options={directory.studentOptions}
+                  placeholder="Search by name or admission number"
+                  emptyMessage="No student matched that search."
                   required
                 />
                 <FormInput
@@ -263,7 +321,7 @@ export function MarksHubPage() {
                 />
               </div>
               <div>
-                <Button type="submit" disabled={createResultMutation.isPending}>
+                <Button type="submit" disabled={createResultMutation.isPending || directory.isLoading}>
                   {createResultMutation.isPending ? 'Saving…' : 'Save Result'}
                 </Button>
               </div>
@@ -276,23 +334,28 @@ export function MarksHubPage() {
               <div className="flex-1">
                 <h2 className="text-lg font-semibold text-slate-950">Results by Exam</h2>
               </div>
-              <div className="flex items-center gap-2">
-                <input
-                  type="text"
-                  value={examLookup}
-                  onChange={(e) => setExamLookup(e.target.value)}
-                  placeholder="Exam UUID…"
-                  className="rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-slate-300 w-64"
+              <div className="grid w-full gap-4 md:max-w-3xl md:grid-cols-2">
+                <FormSelect
+                  label="Class"
+                  value={searchClassId}
+                  onChange={setSearchClassId}
+                  options={[{ value: '', label: 'Select a class' }, ...directory.classOptions]}
                 />
-                <Button variant="secondary" onClick={() => setSearchExamId(examLookup)}>
-                  Load
-                </Button>
+                <SearchableSelect
+                  label="Exam"
+                  selectedValue={searchExamId}
+                  onSelect={setSearchExamId}
+                  options={lookupExamOptions}
+                  placeholder={searchClassId ? 'Search exam title' : 'Select a class first'}
+                  emptyMessage="No exam matched that search."
+                  disabled={!searchClassId}
+                />
               </div>
             </div>
             {resultsQuery.isLoading ? <Skeleton className="h-24" /> : resultsQuery.isError ? (
               <EmptyState title="Unable to load results" description="Could not fetch results for this exam." />
             ) : (
-              <DataTable columns={resultColumns} rows={results} rowKey={(r) => r.id} emptyText={searchExamId ? 'No results for this exam.' : 'Enter an exam ID to load results.'} />
+              <DataTable columns={resultColumns} rows={results} rowKey={(r) => r.id} emptyText={searchExamId ? 'No results for this exam.' : 'Choose an exam to load results.'} />
             )}
           </div>
         </>

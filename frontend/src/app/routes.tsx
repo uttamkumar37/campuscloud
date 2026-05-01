@@ -6,6 +6,7 @@ import { SuperAdminLayout } from '../components/layout/SuperAdminLayout'
 import { PrivateRoute } from '../features/auth/components/PrivateRoute'
 import { PublicRoute } from '../features/auth/components/PublicRoute'
 import { LoginPage } from '../features/auth/pages/LoginPage'
+import { ChangePasswordPage } from '../features/auth/pages/ChangePasswordPage'
 import { AcademicPage } from '../features/academic/pages/AcademicPage'
 import { StudentsPage } from '../features/student/pages/StudentsPage'
 import { TeachersPage } from '../features/teacher/pages/TeachersPage'
@@ -23,6 +24,8 @@ import { MyChildrenPage } from '../features/parent/pages/MyChildrenPage'
 import { AttendanceHubPage } from '../features/attendance/pages/AttendanceHubPage'
 import { FeesHubPage } from '../features/fees/pages/FeesHubPage'
 import { MarksHubPage } from '../features/marks/pages/MarksHubPage'
+import { StudentDashboardPage } from '../features/dashboard/pages/StudentDashboardPage'
+import { TeacherDashboardPage } from '../features/dashboard/pages/TeacherDashboardPage'
 
 export const router = createBrowserRouter([
   {
@@ -72,7 +75,7 @@ export const router = createBrowserRouter([
         path: 'teacher/dashboard',
         element: (
           <PrivateRoute allowedRoles={['TEACHER']}>
-            <DashboardPage />
+            <TeacherDashboardPage />
           </PrivateRoute>
         ),
       },
@@ -80,7 +83,7 @@ export const router = createBrowserRouter([
         path: 'student/dashboard',
         element: (
           <PrivateRoute allowedRoles={['STUDENT']}>
-            <DashboardPage />
+            <StudentDashboardPage />
           </PrivateRoute>
         ),
       },
@@ -88,7 +91,7 @@ export const router = createBrowserRouter([
         path: 'parent/dashboard',
         element: (
           <PrivateRoute allowedRoles={['PARENT']}>
-            <DashboardPage />
+            <MyChildrenPage />
           </PrivateRoute>
         ),
       },
@@ -177,6 +180,14 @@ export const router = createBrowserRouter([
         element: (
           <PrivateRoute allowedRoles={['PARENT']}>
             <MyChildrenPage />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: 'change-password',
+        element: (
+          <PrivateRoute allowedRoles={['SCHOOL_ADMIN', 'TEACHER', 'STUDENT', 'PARENT']}>
+            <ChangePasswordPage />
           </PrivateRoute>
         ),
       },

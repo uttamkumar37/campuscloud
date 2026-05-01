@@ -1,5 +1,5 @@
 import { AxiosError } from 'axios'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
 
 import { Button } from '../../../components/ui/Button'
@@ -9,7 +9,9 @@ import { EmptyState } from '../../../components/ui/EmptyState'
 import { FormInput } from '../../../components/ui/FormInput'
 import { FormSelect } from '../../../components/ui/FormSelect'
 import { PageHeader } from '../../../components/ui/PageHeader'
+import { SearchableSelect } from '../../../components/ui/SearchableSelect'
 import { Skeleton } from '../../../components/ui/Skeleton'
+import { useSchoolDirectory } from '../../academic/hooks/useSchoolDirectory'
 import type { ApiResponse } from '../../../types/api'
 import { showToast } from '../../../utils/toast'
 
@@ -45,13 +47,48 @@ export function AttendanceHubPage() {
   const [filterDate, setFilterDate] = useState(today)
   const [form, setForm] = useState<MarkAttendanceRequest>(emptyForm)
 
+  const directory = useSchoolDirectory()
   const attendanceQuery = useAttendanceByDate(filterDate)
   const markMutation = useMarkAttendance()
 
   const records = attendanceQuery.data?.data ?? []
+  const sectionOptions = directory.getSectionsForClass(form.classId)
+
+  useEffect(() => {
+    if (form.sectionId && !directory.isSectionValidForClass(form.classId, form.sectionId)) {
+      setForm((current) => ({ ...current, sectionId: '' }))
+    }
+  }, [directory, form.classId, form.sectionId])
+
+  const studentLabelById = useMemo(
+    () => Object.fromEntries(directory.students.map((student) => [student.id, `${student.firstName} ${student.lastName} (${student.admissionNo})`])),
+    [directory.students],
+  )
+  const classLabelById = useMemo(
+    () => Object.fromEntries(directory.classes.map((item) => [item.id, item.name])),
+    [directory.classes],
+  )
+  const sectionLabelById = useMemo(
+    () => Object.fromEntries(directory.sections.map((item) => [item.id, `Section ${item.name}`])),
+    [directory.sections],
+  )
 
   const columns: DataTableColumn<AttendanceRecord>[] = [
-    { key: 'studentId', header: 'Student ID', cell: (r) => <span className="font-mono text-xs">{r.studentId}</span> },
+    {
+      key: 'studentId',
+      header: 'Student',
+      cell: (r) => <span className="font-medium text-slate-900">{studentLabelById[r.studentId] ?? 'Unknown student'}</span>,
+    },
+    {
+      key: 'classId',
+      header: 'Class',
+      cell: (r) => classLabelById[r.classId] ?? 'Unknown class',
+    },
+    {
+      key: 'sectionId',
+      header: 'Section',
+      cell: (r) => sectionLabelById[r.sectionId] ?? 'Unknown section',
+    },
     { key: 'date', header: 'Date', cell: (r) => r.attendanceDate },
     {
       key: 'status',
@@ -67,6 +104,16 @@ export function AttendanceHubPage() {
 
   const handleMark = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+
+    if (!directory.isSectionValidForClass(form.classId, form.sectionId)) {
+      showToast({
+        title: 'Invalid section',
+        description: 'Select a section that belongs to the chosen class.',
+        tone: 'error',
+      })
+      return
+    }
+
     try {
       const res = await markMutation.mutateAsync({
         ...form,
@@ -97,28 +144,34 @@ export function AttendanceHubPage() {
         <form className="grid gap-5 p-6" onSubmit={handleMark}>
           <div>
             <h2 className="text-lg font-semibold text-slate-950">Mark Attendance</h2>
-            <p className="mt-1 text-sm text-slate-500">Fill student, class, section, and status for a single record.</p>
+            <p className="mt-1 text-sm text-slate-500">Select the class, section, and student, then record the attendance status.</p>
           </div>
           <div className="grid gap-4 md:grid-cols-2">
-            <FormInput
-              label="Student ID (UUID)"
-              value={form.studentId}
-              onChange={(v) => setForm((f) => ({ ...f, studentId: v }))}
-              placeholder="550e8400-…"
+            <SearchableSelect
+              label="Student"
+              selectedValue={form.studentId}
+              onSelect={(value) => setForm((current) => ({ ...current, studentId: value }))}
+              options={directory.studentOptions}
+              placeholder="Search by name or admission number"
+              emptyMessage="No student matched that search."
+              helperText="Search using the student's name or admission number."
               required
             />
-            <FormInput
-              label="Class ID (UUID)"
+            <FormSelect
+              label="Class"
               value={form.classId}
               onChange={(v) => setForm((f) => ({ ...f, classId: v }))}
-              placeholder="a1b2c3d4-…"
+              options={[{ value: '', label: 'Select a class' }, ...directory.classOptions]}
               required
             />
-            <FormInput
-              label="Section ID (UUID)"
+            <FormSelect
+              label="Section"
               value={form.sectionId}
               onChange={(v) => setForm((f) => ({ ...f, sectionId: v }))}
-              placeholder="e5f6a7b8-…"
+              options={[
+                { value: '', label: form.classId ? 'Select a section' : 'Select a class first' },
+                ...sectionOptions,
+              ]}
               required
             />
             <FormInput
@@ -142,8 +195,11 @@ export function AttendanceHubPage() {
               placeholder="On time, medical leave, etc."
             />
           </div>
+          {directory.hasError ? (
+            <p className="text-sm text-rose-600">School directory data could not be loaded. Refresh and try again.</p>
+          ) : null}
           <div>
-            <Button type="submit" disabled={markMutation.isPending}>
+            <Button type="submit" disabled={markMutation.isPending || directory.isLoading}>
               {markMutation.isPending ? 'Saving…' : 'Mark Attendance'}
             </Button>
           </div>

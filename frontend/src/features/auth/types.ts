@@ -8,7 +8,8 @@ export type UserRole =
 export interface LoginRequest {
   username: string
   password: string
-  tenantId?: string
+  tenantSlug?: string
+  role?: UserRole
 }
 
 export interface LoginResponse {
@@ -19,5 +20,19 @@ export interface LoginResponse {
   role: UserRole
   roles: string[]
   tenantId?: string
+  tenantSlug?: string
+  schoolName?: string
   userId?: string
+}
+
+export interface SchoolSearchResult {
+  slug: string
+  schoolName: string
+  logoUrl: string | null
+  primaryColor: string
+}
+
+export interface ChangePasswordRequest {
+  currentPassword: string
+  newPassword: string
 }

@@ -18,7 +18,7 @@ export function ProfilePage() {
       <section className="space-y-4">
         <PageHeader title="Profile" subtitle="Could not load profile." />
         <div className="rounded-[28px] border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
-          Try signing in again or check your tenant header.
+          Try signing in again or confirm that your school workspace is selected.
         </div>
       </section>
     )
@@ -28,7 +28,7 @@ export function ProfilePage() {
 
   return (
     <section className="space-y-6">
-      <PageHeader title="My profile" subtitle="Unified CampusCloud account for this school." />
+      <PageHeader title="My profile" subtitle="Unified CloudCampus account for this school." />
       <div className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-sm">
         <dl className="grid gap-4 sm:grid-cols-2">
           <div>

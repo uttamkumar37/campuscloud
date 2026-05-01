@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 import { EmptyState } from '../../../components/ui/EmptyState'
 import { PageHeader } from '../../../components/ui/PageHeader'
 import { Skeleton } from '../../../components/ui/Skeleton'
@@ -26,6 +28,11 @@ function ChildCard({ child }: { child: Child }) {
 
   const overdueFees = feeAssignments.filter((f) => f.status === 'OVERDUE').length
   const pendingFees = feeAssignments.filter((f) => f.status === 'PENDING' || f.status === 'PARTIALLY_PAID').length
+  const notifications = [
+    overdueFees > 0 ? `${overdueFees} overdue fee item(s)` : null,
+    pendingFees > 0 ? `${pendingFees} fee item(s) still pending` : null,
+    !todayRecord ? 'Attendance has not been marked today yet.' : null,
+  ].filter(Boolean) as string[]
 
   return (
     <div className="rounded-[24px] border border-slate-200 bg-white p-5 shadow-sm space-y-4">
@@ -82,6 +89,31 @@ function ChildCard({ child }: { child: Child }) {
           </div>
         )}
       </div>
+
+      <div className="rounded-xl border border-slate-200 px-4 py-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-700">Notifications</p>
+        {notifications.length === 0 ? (
+          <p className="mt-2 text-sm text-emerald-600">Everything looks on track today.</p>
+        ) : (
+          <ul className="mt-2 space-y-1 text-sm text-slate-600">
+            {notifications.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Link to="/attendance" className="rounded-xl bg-slate-900 px-4 py-3 text-center text-sm font-medium text-white transition hover:bg-slate-800">
+          Attendance
+        </Link>
+        <Link to="/fees" className="rounded-xl bg-slate-100 px-4 py-3 text-center text-sm font-medium text-slate-700 transition hover:bg-slate-200">
+          Fees
+        </Link>
+        <Link to="/marks" className="rounded-xl bg-slate-100 px-4 py-3 text-center text-sm font-medium text-slate-700 transition hover:bg-slate-200">
+          Results
+        </Link>
+      </div>
     </div>
   )
 }
@@ -94,8 +126,8 @@ export function MyChildrenPage() {
   return (
     <section className="space-y-6">
       <PageHeader
-        title="My Children"
-        subtitle="Students linked to your parent account — view attendance and fee status at a glance."
+        title="Parent Dashboard"
+        subtitle="Students linked to your account, with fee alerts and daily attendance status in one place."
       />
 
       {childrenQuery.isLoading ? (

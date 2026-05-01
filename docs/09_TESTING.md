@@ -1,4 +1,4 @@
-# CampusCloud — Testing Guide
+# CloudCampus — Testing Guide
 
 
 > Version: 1.0 | Last Updated: 2026-04-28
@@ -58,12 +58,12 @@ After running tests, HTML/XML reports are generated at:
 
 ```
 backend/target/surefire-reports/
-├── com.campuscloud.user.service.UserServiceImplTest.txt
-├── com.campuscloud.exam.service.ExamServiceImplTest.txt
-├── com.campuscloud.fees.service.FeesServiceImplTest.txt
-├── TEST-com.campuscloud.user.service.UserServiceImplTest.xml
-├── TEST-com.campuscloud.exam.service.ExamServiceImplTest.xml
-└── TEST-com.campuscloud.fees.service.FeesServiceImplTest.xml
+├── com.cloudcampus.user.service.UserServiceImplTest.txt
+├── com.cloudcampus.exam.service.ExamServiceImplTest.txt
+├── com.cloudcampus.fees.service.FeesServiceImplTest.txt
+├── TEST-com.cloudcampus.user.service.UserServiceImplTest.xml
+├── TEST-com.cloudcampus.exam.service.ExamServiceImplTest.xml
+└── TEST-com.cloudcampus.fees.service.FeesServiceImplTest.xml
 ```
 
 ---
@@ -72,7 +72,7 @@ backend/target/surefire-reports/
 
 ### 3.1 UserServiceImplTest
 
-**Location:** `backend/src/test/java/com/campuscloud/user/service/UserServiceImplTest.java`
+**Location:** `backend/src/test/java/com/cloudcampus/user/service/UserServiceImplTest.java`
 
 | Test Case | Description |
 |-----------|-------------|
@@ -106,7 +106,7 @@ class UserServiceImplTest {
 
 ### 3.2 ExamServiceImplTest
 
-**Location:** `backend/src/test/java/com/campuscloud/exam/service/ExamServiceImplTest.java`
+**Location:** `backend/src/test/java/com/cloudcampus/exam/service/ExamServiceImplTest.java`
 
 | Test Case | Description |
 |-----------|-------------|
@@ -120,7 +120,7 @@ class UserServiceImplTest {
 
 ### 3.3 FeesServiceImplTest
 
-**Location:** `backend/src/test/java/com/campuscloud/fees/service/FeesServiceImplTest.java`
+**Location:** `backend/src/test/java/com/cloudcampus/fees/service/FeesServiceImplTest.java`
 
 | Test Case | Description |
 |-----------|-------------|
@@ -356,14 +356,14 @@ curl -s -X POST http://localhost:8080/api/v1/tenants \
 
 ## 5. Postman Testing
 
-See [postman/10_01_10_README.md](./postman/10_01_10_README.md) for full import and usage instructions.
+See [postman/10_README.md](./postman/10_README.md) for full import and usage instructions.
 
 ### Quick Start
 
 1. Open Postman
-2. Import `docs/postman/CampusCloud.postman_collection.json`
-3. Import `docs/postman/CampusCloud.local.postman_environment.json`
-4. Select the **CampusCloud Local** environment
+2. Import `docs/postman/CloudCampus.postman_collection.json`
+3. Import `docs/postman/CloudCampus.local.postman_environment.json`
+4. Select the **CloudCampus Local** environment
 5. Run **Auth → Login** first — the token is auto-captured
 6. All subsequent requests use `{{token}}` and `{{tenantId}}` automatically
 

@@ -1,4 +1,4 @@
-# CampusCloud — System Architecture
+# CloudCampus — System Architecture
 
 
 > Version: 1.0 | Last Updated: 2026-04-28 (subscription system added) | Based on actual source code
@@ -22,7 +22,7 @@
 
 ## 1. High-Level Architecture
 
-CampusCloud is a **multi-tenant SaaS school management platform** built as a modular monolith with clean separation between backend, frontend, and infrastructure layers.
+CloudCampus is a **multi-tenant SaaS school management platform** built as a modular monolith with clean separation between backend, frontend, and infrastructure layers.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -119,15 +119,15 @@ Controller → Service Interface → Service Impl → Repository → Database
 | **Repository** | `*.repository` | Spring Data JPA. Extends `JpaRepository<Entity, UUID>`. Custom finders only — no raw SQL. |
 | **Entity** | `*.entity` | JPA-mapped table rows. Uses `@PrePersist` for UUID and `createdAt`. Never returned from controllers. |
 | **DTO** | `*.dto` | Java records for request/response contracts. Annotated with `@Valid`. One `*Request` and one `*Response` per use case. |
-| **Config** | `com.campuscloud.config` | Spring beans: `SecurityConfig`, `SwaggerConfig`, `PasswordConfig`. |
-| **Common** | `com.campuscloud.common` | `ApiResponse<T>`, `PageResponse<T>`, `GlobalExceptionHandler`. |
-| **Tenant** | `com.campuscloud.tenant` | Multi-tenancy infra: `TenantContext`, `TenantRequestFilter`, Hibernate resolvers. |
+| **Config** | `com.cloudcampus.config` | Spring beans: `SecurityConfig`, `SwaggerConfig`, `PasswordConfig`. |
+| **Common** | `com.cloudcampus.common` | `ApiResponse<T>`, `PageResponse<T>`, `GlobalExceptionHandler`. |
+| **Tenant** | `com.cloudcampus.tenant` | Multi-tenancy infra: `TenantContext`, `TenantRequestFilter`, Hibernate resolvers. |
 
 ### 3.2 Module Structure
 
 ```
-backend/src/main/java/com/campuscloud/
-├── CampusCloudApplication.java
+backend/src/main/java/com/cloudcampus/
+├── CloudCampusApplication.java
 ├── academic/        classes, subjects, sections
 ├── attendance/      daily attendance tracking
 ├── auth/            JWT login, /auth/me
@@ -199,7 +199,7 @@ Paginated response uses `PageResponse<T>`:
 
 ### 3.4 Subscription & Billing System
 
-The `com.campuscloud.subscription` module manages SaaS plan gating for tenants. All tables live in the `public` schema.
+The `com.cloudcampus.subscription` module manages SaaS plan gating for tenants. All tables live in the `public` schema.
 
 ```
 subscription_plans          ← available SaaS plans (FREE, BASIC, PRO, ENTERPRISE)
@@ -305,10 +305,10 @@ Backend REST API
 
 ### 5.1 Tenancy Model
 
-CampusCloud uses **schema-per-tenant** isolation. Each school receives a dedicated PostgreSQL schema containing all its domain tables. There are no shared data tables between tenants and no discriminator columns.
+CloudCampus uses **schema-per-tenant** isolation. Each school receives a dedicated PostgreSQL schema containing all its domain tables. There are no shared data tables between tenants and no discriminator columns.
 
 ```
-PostgreSQL Database: campuscloud
+PostgreSQL Database: cloudcampus
 ├── public schema
 │   ├── tenants                 (global tenant registry)
 │   └── flyway_schema_history   (Flyway migration tracking)
@@ -424,6 +424,8 @@ users ──< parent_students ──> students
 |------|---------|
 | `V1__init_public_tenants.sql` | Creates `public.tenants` table with indexes |
 | `V2__baseline_public_schema_extensions.sql` | Adds `logo_url` and `primary_color` columns to tenants |
+| `V3__add_subscription_tables.sql` | Creates `subscription_plans`, `subscription_plan_features`, `tenant_subscriptions`, `platform_payments` tables; seeds 4 default plans |
+| `V4__add_gateway_order_id.sql` | Adds `gateway_order_id VARCHAR(100)` to `tenant_subscriptions` for Razorpay order tracking |
 
 ---
 
@@ -594,13 +596,29 @@ Available at runtime:
 
 ### 9.4 External Services
 
-As of v1.0, there are **no external third-party integrations**:
+| Service | Status | Notes |
+|---------|--------|-------|
+| Razorpay Payment Gateway | ✅ Integrated | Online subscription payments; HMAC-SHA256 webhook verification |
+| Email notifications | Pending | Not yet implemented |
+| SMS / Push notifications | Pending | Not yet implemented |
 
-| Service | Status |
-|---------|--------|
-| Email notifications | Pending |
-| Payment gateway | Pending (fees are manually recorded) |
-| SMS / Push notifications | Pending |
+#### Razorpay Integration Flow
+
+```
+SuperAdmin UI
+  → POST /api/v1/tenants/{id}/subscribe/initiate
+      ← { orderId, amountInPaise, keyId }  
+  → Opens Razorpay Checkout.js modal
+  → User completes payment
+
+Razorpay Dashboard
+  → POST /api/v1/payments/webhook  (payment.captured event)
+      Signature verified via HMAC-SHA256 (RAZORPAY_WEBHOOK_SECRET)
+      Subscription status updated to PAID
+      PlatformPayment record created
+```
+
+Required environment variables: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET`
 
 ---
 
@@ -611,19 +629,19 @@ As of v1.0, there are **no external third-party integrations**:
 ```
 docker-compose.yml
 │
-├── postgres  (campuscloud-postgres)
+├── postgres  (cloudcampus-postgres)
 │   ├── Image:       postgres:16-alpine
 │   ├── Port:        5432:5432
 │   ├── Volume:      postgres_data (persistent)
 │   └── Health:      pg_isready
 │
-├── backend   (campuscloud-backend)
+├── backend   (cloudcampus-backend)
 │   ├── Build:       ./backend/Dockerfile
 │   ├── Port:        8080:8080
 │   ├── Depends on:  postgres (healthy)
 │   └── Restart:     unless-stopped
 │
-└── frontend  (campuscloud-frontend)
+└── frontend  (cloudcampus-frontend)
     ├── Image:       node:22-alpine
     ├── Port:        5173:5173
     ├── Command:     npm install && npm run dev -- --host 0.0.0.0
@@ -634,7 +652,7 @@ docker-compose.yml
 
 | Variable | Required | Default | Description |
 |----------|----------|---------|-------------|
-| `DB_URL` | Yes | `jdbc:postgresql://localhost:5432/campuscloud` | PostgreSQL JDBC URL |
+| `DB_URL` | Yes | `jdbc:postgresql://localhost:5432/cloudcampus` | PostgreSQL JDBC URL |
 | `DB_USERNAME` | Yes | `postgres` | Database username |
 | `DB_PASSWORD` | Yes | — | Database password |
 | `JWT_SECRET` | Yes | — | JWT signing secret (minimum 32 bytes) |
@@ -643,6 +661,11 @@ docker-compose.yml
 | `BOOTSTRAP_ADMIN_PASSWORD` | Yes | — | Initial Super Admin password |
 | `BOOTSTRAP_ADMIN_ROLE` | No | `SUPER_ADMIN` | Bootstrap admin role |
 | `SERVER_PORT` | No | `8080` | Backend HTTP server port |
+| `RAZORPAY_KEY_ID` | No | _(empty)_ | Razorpay public API key |
+| `RAZORPAY_KEY_SECRET` | No | _(empty)_ | Razorpay secret key |
+| `RAZORPAY_WEBHOOK_SECRET` | No | _(empty)_ | Razorpay webhook HMAC secret |
+| `CORS_ALLOWED_ORIGINS` | No | `http://localhost:5173` | Comma-separated frontend origins for CORS |
+| `APP_COOKIE_SECURE` | No | `false` | Set to `true` in HTTPS production deployments |
 
 ### 10.3 Build & Run Commands
 

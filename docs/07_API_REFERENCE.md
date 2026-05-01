@@ -1,4 +1,4 @@
-# CampusCloud — API Reference
+# CloudCampus — API Reference
 
 
 > Quick-reference table of all REST endpoints. For full request/response details see [08_API.md](./08_API.md).

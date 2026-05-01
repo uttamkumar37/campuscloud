@@ -6,7 +6,7 @@ export interface ToastDetail {
   tone?: ToastTone
 }
 
-const TOAST_EVENT = 'campuscloud:toast'
+const TOAST_EVENT = 'cloudcampus:toast'
 
 export function showToast(detail: ToastDetail) {
   window.dispatchEvent(new CustomEvent<ToastDetail>(TOAST_EVENT, { detail }))

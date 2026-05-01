@@ -1,9 +1,9 @@
-# CampusCloud — Platform Blueprint
+# CloudCampus — Platform Blueprint
 
 
 > Version: 1.0 | Last Updated: 2026-04-28
 
-This document explains how CampusCloud works from the perspective of each user role, covering workflows, access boundaries, and system capabilities.
+This document explains how CloudCampus works from the perspective of each user role, covering workflows, access boundaries, and system capabilities.
 
 ---
 
@@ -26,7 +26,7 @@ This document explains how CampusCloud works from the perspective of each user r
 
 ## 1. What is a Tenant?
 
-A **tenant** is an individual school registered on the CampusCloud platform. Each tenant:
+A **tenant** is an individual school registered on the CloudCampus platform. Each tenant:
 
 - Has a **unique schema** in the PostgreSQL database (complete data isolation)
 - Has a **unique `tenantId`** (business identifier, e.g., `greenwood`)
@@ -554,7 +554,7 @@ Step 4: Review the response
 
 ### 12.1 Plans
 
-CampusCloud offers four pre-seeded SaaS plans. Plans are stored in the `public` schema and accessible to all tenants.
+CloudCampus offers four pre-seeded SaaS plans. Plans are stored in the `public` schema and accessible to all tenants.
 
 | Plan | Price | Billing Cycle | Max Students | Max Teachers |
 |------|-------|---------------|--------------|--------------|

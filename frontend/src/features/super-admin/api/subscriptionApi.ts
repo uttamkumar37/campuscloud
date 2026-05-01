@@ -8,6 +8,7 @@ import type {
   TenantSubscription,
   RecordPaymentRequest,
   PlatformPayment,
+  InitiatePaymentResponse,
 } from '../types'
 
 export const subscriptionApi = {
@@ -19,6 +20,9 @@ export const subscriptionApi = {
 
   subscribe: (tenantId: string, data: SubscribeRequest) =>
     apiClient.post<ApiResponse<TenantSubscription>>(ENDPOINTS.subscriptions.subscribe(tenantId), data),
+
+  initiatePayment: (tenantId: string) =>
+    apiClient.post<ApiResponse<InitiatePaymentResponse>>(ENDPOINTS.subscriptions.initiate(tenantId), {}),
 
   getSubscription: (tenantId: string) =>
     apiClient.get<ApiResponse<TenantSubscription | null>>(ENDPOINTS.subscriptions.get(tenantId)),

@@ -1,23 +1,32 @@
-const ACCESS_TOKEN_KEY = 'edutenant.accessToken'
-const TENANT_ID_KEY = 'edutenant.tenantId'
-const USERNAME_KEY = 'edutenant.username'
-const ROLE_KEY = 'edutenant.role'
-const USER_ID_KEY = 'edutenant.userId'
+// NOTE: The JWT access token is stored in an HttpOnly cookie set by the backend.
+// It is not accessible from JavaScript. Only non-sensitive session metadata is
+// kept in localStorage (tenantSlug, schoolName, username, role, userId).
+
+const TENANT_SLUG_KEY = 'cloudcampus.tenantSlug'
+const SCHOOL_NAME_KEY = 'cloudcampus.schoolName'
+const USERNAME_KEY = 'cloudcampus.username'
+const ROLE_KEY = 'cloudcampus.role'
+const USER_ID_KEY = 'cloudcampus.userId'
+
+const LEGACY_TENANT_ID_KEY = 'edutenant.tenantId'
+const LEGACY_USERNAME_KEY = 'edutenant.username'
+const LEGACY_ROLE_KEY = 'edutenant.role'
+const LEGACY_USER_ID_KEY = 'edutenant.userId'
 
 export const storage = {
-  getAccessToken: (): string | null => localStorage.getItem(ACCESS_TOKEN_KEY),
-  setAccessToken: (token: string): void => {
-    localStorage.setItem(ACCESS_TOKEN_KEY, token)
+  getTenantSlug: (): string | null => localStorage.getItem(TENANT_SLUG_KEY),
+  setTenantSlug: (tenantSlug: string): void => {
+    localStorage.setItem(TENANT_SLUG_KEY, tenantSlug)
   },
-  removeAccessToken: (): void => {
-    localStorage.removeItem(ACCESS_TOKEN_KEY)
+  removeTenantSlug: (): void => {
+    localStorage.removeItem(TENANT_SLUG_KEY)
   },
-  getTenantId: (): string | null => localStorage.getItem(TENANT_ID_KEY),
-  setTenantId: (tenantId: string): void => {
-    localStorage.setItem(TENANT_ID_KEY, tenantId)
+  getSchoolName: (): string | null => localStorage.getItem(SCHOOL_NAME_KEY),
+  setSchoolName: (schoolName: string): void => {
+    localStorage.setItem(SCHOOL_NAME_KEY, schoolName)
   },
-  removeTenantId: (): void => {
-    localStorage.removeItem(TENANT_ID_KEY)
+  removeSchoolName: (): void => {
+    localStorage.removeItem(SCHOOL_NAME_KEY)
   },
   getUsername: (): string | null => localStorage.getItem(USERNAME_KEY),
   setUsername: (username: string): void => {
@@ -41,10 +50,14 @@ export const storage = {
     localStorage.removeItem(USER_ID_KEY)
   },
   clearAuth: (): void => {
-    localStorage.removeItem(ACCESS_TOKEN_KEY)
-    localStorage.removeItem(TENANT_ID_KEY)
+    localStorage.removeItem(TENANT_SLUG_KEY)
+    localStorage.removeItem(SCHOOL_NAME_KEY)
     localStorage.removeItem(USERNAME_KEY)
     localStorage.removeItem(ROLE_KEY)
     localStorage.removeItem(USER_ID_KEY)
+    localStorage.removeItem(LEGACY_TENANT_ID_KEY)
+    localStorage.removeItem(LEGACY_USERNAME_KEY)
+    localStorage.removeItem(LEGACY_ROLE_KEY)
+    localStorage.removeItem(LEGACY_USER_ID_KEY)
   },
 }

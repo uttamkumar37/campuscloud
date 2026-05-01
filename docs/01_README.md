@@ -1,6 +1,6 @@
-# CampusCloud — Documentation Index
+# CloudCampus — Documentation Index
 
-> **Start here.** Follow the numbered reading order below to go from zero to fully productive with CampusCloud.
+> **Start here.** Follow the numbered reading order below to go from zero to fully productive with CloudCampus.
 
 ---
 
@@ -20,7 +20,7 @@ Tracking progress?           → Read 12 → 13
 ## 1. [02_SETUP.md](./02_SETUP.md)
 **Start here — run the project locally**
 
-Everything you need to get CampusCloud running:
+Everything you need to get CloudCampus running:
 - Docker Compose quick start (recommended)
 - Manual local setup (Java + Node + PostgreSQL)
 - Environment variables reference
@@ -32,7 +32,7 @@ Everything you need to get CampusCloud running:
 ## 2. [03_ARCHITECTURE.md](./03_ARCHITECTURE.md)
 **Understand the system design**
 
-How CampusCloud is built:
+How CloudCampus is built:
 - High-level architecture diagram
 - Technology stack (Spring Boot 3.4, React + Vite, PostgreSQL)
 - Backend layering (Controller → Service → Repository)
@@ -116,7 +116,7 @@ Complete request/response documentation for every endpoint:
 
 ---
 
-## 9. [postman/10_01_10_README.md](./postman/10_01_10_README.md)
+## 9. [postman/10_README.md](./postman/10_README.md)
 **Postman collection guide**
 
 How to import and use the Postman collection:
@@ -189,7 +189,7 @@ How to import and use the Postman collection:
 | Backend API | `http://localhost:8080/api/v1` |
 | Swagger UI | `http://localhost:8080/swagger-ui.html` |
 | Frontend | `http://localhost:5173` |
-| PostgreSQL | `localhost:5432` / db: `campuscloud` |
+| PostgreSQL | `localhost:5432` / db: `cloudcampus` |
 
 ### Default Login
 

@@ -1,9 +1,9 @@
-# CampusCloud — Postman Collection Guide
+# CloudCampus — Postman Collection Guide
 
 
 > Last Updated: 2026-04-28
 
-This directory contains the Postman collection and environment files for testing the CampusCloud API.
+This directory contains the Postman collection and environment files for testing the CloudCampus API.
 
 ---
 
@@ -11,8 +11,8 @@ This directory contains the Postman collection and environment files for testing
 
 | File | Description |
 |------|-------------|
-| `CampusCloud.postman_collection.json` | Full API collection — all endpoints organized by module |
-| `CampusCloud.local.postman_environment.json` | Environment for local development (localhost:8080) |
+| `CloudCampus.postman_collection.json` | Full API collection — all endpoints organized by module |
+| `CloudCampus.local.postman_environment.json` | Environment for local development (localhost:8080) |
 | `EduTenant Local.postman_environment.json` | Pre-configured environment for the EduTenant demo school |
 
 ---
@@ -23,15 +23,15 @@ This directory contains the Postman collection and environment files for testing
 
 1. Open Postman
 2. Click **Import** (top-left)
-3. Drag and drop `CampusCloud.postman_collection.json`
+3. Drag and drop `CloudCampus.postman_collection.json`
 4. Click **Import**
 
 ### Step 2: Import an Environment
 
 1. Click **Import** again
-2. Drag and drop `CampusCloud.local.postman_environment.json`
+2. Drag and drop `CloudCampus.local.postman_environment.json`
 3. Click **Import**
-4. Select **CampusCloud Local** from the environment dropdown (top-right)
+4. Select **CloudCampus Local** from the environment dropdown (top-right)
 
 ---
 

@@ -24,7 +24,11 @@ export function useAssignFee() {
 }
 
 export function useRecordPayment() {
+  const queryClient = useQueryClient()
   return useMutation({
     mutationFn: (payload: RecordPaymentRequest) => recordPayment(payload),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fees', 'assignments'] })
+    },
   })
 }

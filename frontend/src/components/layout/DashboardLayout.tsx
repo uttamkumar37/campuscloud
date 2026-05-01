@@ -30,7 +30,7 @@ function navClassName(isActive: boolean) {
 
 export function DashboardLayout() {
   const navigate = useNavigate()
-  const { logout, role, username, tenantId } = useAuth()
+  const { logout, role, username, schoolName } = useAuth()
   const summaryQuery = useTenantDashboardSummary()
   const branding = summaryQuery.data?.data.branding
   const primaryColor = branding?.primaryColor ?? '#0f766e'
@@ -65,12 +65,12 @@ export function DashboardLayout() {
               )}
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/70">
-                  CampusCloud
+                  CloudCampus
                 </p>
                 <p className="mt-1 text-xl font-semibold text-white">
-                  {branding?.schoolName ?? 'Tenant Workspace'}
+                  {branding?.schoolName ?? schoolName ?? 'School Workspace'}
                 </p>
-                <p className="text-sm text-white/75">{tenantId ?? 'tenant'}</p>
+                <p className="text-sm text-white/75">Connected school workspace</p>
               </div>
             </div>
 

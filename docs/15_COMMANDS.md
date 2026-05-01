@@ -1,8 +1,8 @@
-# CampusCloud — Commands Reference
+# CloudCampus — Commands Reference
 
 > Version: 1.0 | Last Updated: 2026-04-28
 
-Complete reference for all commands used to develop, test, and deploy CampusCloud.
+Complete reference for all commands used to develop, test, and deploy CloudCampus.
 
 ---
 
@@ -74,8 +74,8 @@ docker compose ps
 
 ### Open a shell inside a container
 ```bash
-docker exec -it campuscloud-backend sh
-docker exec -it campuscloud-postgres psql -U postgres -d campuscloud
+docker exec -it cloudcampus-backend sh
+docker exec -it cloudcampus-postgres psql -U postgres -d cloudcampus
 ```
 
 ### Remove all stopped containers and dangling images
@@ -104,7 +104,7 @@ mvn spring-boot:run
 
 # Run with custom env vars inline
 JWT_SECRET=myjwtsecret \
-DB_URL=jdbc:postgresql://localhost:5432/campuscloud \
+DB_URL=jdbc:postgresql://localhost:5432/cloudcampus \
 DB_USERNAME=postgres \
 DB_PASSWORD=postgres \
 BOOTSTRAP_ADMIN_USERNAME=superadmin \
@@ -184,7 +184,7 @@ git status
 git add .
 
 # Stage specific file
-git add backend/src/main/java/com/campuscloud/config/SecurityConfig.java
+git add backend/src/main/java/com/cloudcampus/config/SecurityConfig.java
 
 # Commit
 git commit -m "feat: your change description"
@@ -231,12 +231,12 @@ git diff --cached
 
 ### Connect to PostgreSQL (via Docker)
 ```bash
-docker exec -it campuscloud-postgres psql -U postgres -d campuscloud
+docker exec -it cloudcampus-postgres psql -U postgres -d cloudcampus
 ```
 
 ### Connect to PostgreSQL (local install)
 ```bash
-psql -U postgres -d campuscloud
+psql -U postgres -d cloudcampus
 ```
 
 ### Useful SQL inside psql
@@ -284,14 +284,14 @@ All three workflows are set to `workflow_dispatch` only (manual trigger). They w
 
 | Workflow file | Name | Trigger | Purpose |
 |---|---|---|---|
-| `ci-cd.yml` | CampusCloud CI/CD | Manual only ⚠️ | Build → Docker push → SSH deploy |
+| `ci-cd.yml` | CloudCampus CI/CD | Manual only ⚠️ | Build → Docker push → SSH deploy |
 | `ci.yml` | Legacy CI | Manual only | Build + test only |
 | `docker-publish.yml` | Legacy Docker Publish | Manual only | Push image to GHCR |
 
 ### To trigger a workflow manually
 1. Go to your repo on GitHub
 2. Click **Actions** tab
-3. Select the workflow (e.g. *CampusCloud CI/CD*)
+3. Select the workflow (e.g. *CloudCampus CI/CD*)
 4. Click **Run workflow** → **Run workflow**
 
 ### To re-enable automatic CI/CD on push (production)

@@ -1,7 +1,7 @@
-# CampusCloud — Pending Tasks
+# CloudCampus — Pending Tasks
 
 
-> Last Updated: 2026-04-30 | See [13_PROJECT_TRACKER.md](./13_PROJECT_TRACKER.md) for completed work.
+> Last Updated: 2026-05-01 | See [13_PROJECT_TRACKER.md](./13_PROJECT_TRACKER.md) for completed work.
 
 ---
 
@@ -15,7 +15,7 @@
 
 ---
 
-## ✅ Completed Since Last Update (2026-04-30)
+## ✅ Completed Since Last Update (2026-05-01)
 
 | Task | Module | Completion Notes |
 |------|--------|------------------|
@@ -34,6 +34,7 @@
 | Task 45 — Frontend UX Hardening | Frontend (all) | `ConfirmDialog` component; delete student/teacher with confirm dialogs; 401 auto-redirect to correct login route |
 | Task 46 — Bulk Upload UI | `frontend/src/features/bulk-upload/` | File picker (.xlsx), drag-and-drop, progress bar, result card, per-row error table, sample download, instructions modal |
 | Task 47 — Documentation Update | `docs/`, `docs/postman/` | 07_API_REFERENCE.md, 08_API.md (v1.1), Postman collection: 16 folders, 49 endpoints, legacy folder removed |
+| Task 48 — Payment Gateway Integration | Backend + Frontend | Flyway V4; `PaymentGatewayService` interface; `RazorpayPaymentGatewayServiceImpl`; `POST /subscribe/initiate`; `POST /payments/webhook` (HMAC-SHA256 verified); "Pay Online" button + Razorpay checkout.js in `TenantSubscriptionPage`; `12_PAYMENT_FLOW.md` updated to v2 |
 
 ---
 
@@ -45,24 +46,5 @@ _None_
 
 ## ❌ Pending (Not Started)
 
-### Task 48 — Payment Gateway Integration
-
-**Module:** Backend + Frontend
-**Priority:** 🟡 Medium
-**Depends on:** Subscription backend (V3 migration, already done)
-
-**What needs to be done:**
-- [ ] Add `gateway_order_id` to `tenant_subscriptions` via Flyway V4 migration
-- [ ] Create `PaymentGatewayService` interface with `createOrder()` and `verifyWebhook()`
-- [ ] Implement `RazorpayPaymentGatewayServiceImpl`
-- [ ] `POST /api/v1/tenants/{tenantId}/subscribe/initiate` → returns Razorpay `orderId`
-- [ ] `POST /api/v1/payments/webhook` → verifies signature, activates subscription
-- [ ] Store API keys via env vars: `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`
-- [ ] Frontend: "Pay Online" button in `TenantSubscriptionPage.tsx` using Razorpay checkout.js
-- [ ] Frontend: poll subscription status after payment success
-
-**Reference:** See `docs/12_PAYMENT_FLOW.md` for full sequence diagram.
-
----
-
+_None — all planned tasks completed._
 

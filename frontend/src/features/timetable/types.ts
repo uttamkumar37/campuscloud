@@ -15,6 +15,7 @@ export interface CreateTimetableSlotRequest {
   classId: string
   sectionId: string | null
   subjectId: string | null
+  teacherId: string | null
   dayOfWeek: number
   startTime: string
   endTime: string
